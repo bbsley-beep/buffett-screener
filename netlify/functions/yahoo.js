@@ -29,7 +29,8 @@ exports.handler = async (event) => {
         closes: quote.close,
         highs: quote.high,
         lows: quote.low,
-        volumes: quote.volume
+        volumes: quote.volume,
+        timestamps: result.timestamp
       })
     };
   } catch (e) {
