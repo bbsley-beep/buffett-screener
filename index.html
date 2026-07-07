@@ -1,0 +1,86 @@
+<script>
+// Remove the old SP500_SAMPLE array entirely
+
+// New: Load tickers from sp500.json
+let SP500 = [];
+const CACHE_KEY = 'buffettScan_v1_3';
+const WATCH_KEY = 'buffettWatchlist_v1_3';
+const TICKER_KEY = 'sp500Tickers_v1_3';
+let watchlist = JSON.parse(localStorage.getItem(WATCH_KEY) || '[]');
+
+async function loadSP500Tickers() {
+  // Cache tickers for 7 days to avoid refetching
+  const cached = JSON.parse(localStorage.getItem(TICKER_KEY) || 'null');
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
+  if (cached && cached.timestamp > weekAgo) {
+    SP500 = cached.tickers;
+    return;
+  }
+
+  try {
+    const res = await fetch('/sp500.json');
+    const data = await res.json();
+    SP500 = data.tickers;
+    localStorage.setItem(TICKER_KEY, JSON.stringify({
+      timestamp: Date.now(),
+      tickers: SP500
+    }));
+    console.log(`Loaded ${SP500.length} S&P 500 tickers, updated ${data.updated}`);
+  } catch (e) {
+    console.error('Failed to load sp500.json', e);
+    // Fallback to small list if json fails
+    SP500 = ['AAPL','MSFT','GOOGL','AMZN','NVDA'];
+  }
+}
+
+//... rest of your existing code stays the same...
+
+async function scanStocks(force=false) {
+  scanBtn.disabled=true; backtestBtn.disabled=true; forceScanBtn.disabled=true;
+  resultsBody.innerHTML='';
+
+  // Load tickers first
+  if (SP500.length === 0) await loadSP500Tickers();
+
+  if (!force) {
+    const cached = loadCache();
+    if (cached) { renderResults(cached); scanBtn.disabled=false; backtestBtn.disabled=false; forceScanBtn.disabled=false; return; }
+  }
+
+  const g=parseFloat(document.getElementById('growthRate').value);
+  const gt=parseFloat(document.getElementById('terminalGrowth').value);
+  const r=parseFloat(document.getElementById('discountRate').value);
+  const results=[];
+
+  for (let i=0;i<SP500.length;i++) {
+    const t=SP500[i]; statusEl.textContent=`Scanning ${i+1}/${SP500.length}: ${t}`;
+    try {
+      const d=await fetchYahooData(t);
+      const rsi=calcRSI(d.closes), sma20=calcSMA(d.closes,20), bb=calcBB(d.closes), macd=calcMACD(d.closes);
+      const atr=calcATR(d.highs,d.lows,d.closes), avgV=d.volumes.slice(-20).reduce((a,b)=>a+b,0)/20;
+      const iv=calcDCF(d.fcf,d.shares,d.netDebt,g,gt,r), mos=(1-d.price/iv)*100;
+      const bSc=scoreBuffett(d,mos), rSc=scoreRSI(rsi), tSc=scoreTech(d.price,sma20,d.volumes[d.volumes.length-1],avgV,bb,macd);
+      const rsiFinal=tSc>=50?rSc:0, hybrid=0.5*bSc+0.3*rsiFinal+0.2*tSc;
+
+      if (bSc>=60) {
+        const stop=d.price*0.97, target=d.price+1.5*atr, signal=getSignal(rsi,d.price,stop,target);
+        results.push({ticker:t,signal,bScore:bSc,rsi,tScore:tSc,hybrid,price:d.price,stop,target,mos,pe:d.pe});
+
+        if (watchlist.includes(t) && rsi<30 && tSc>=75) {
+          new Notification(`Buy Signal: ${t}`, {body:`RSI ${rsi.toFixed(1)}, Tech ${tSc}, Hybrid ${hybrid.toFixed(1)}`});
+        }
+      }
+    } catch(e){console.error(t,e);}
+  }
+  results.sort((a,b)=>b.hybrid-a.hybrid);
+  saveCache(results);
+  renderResults(results);
+  scanBtn.disabled=false; backtestBtn.disabled=false; forceScanBtn.disabled=false;
+}
+
+// Load tickers on page load
+loadSP500Tickers();
+
+//... rest of your existing functions unchanged...
+</script>
