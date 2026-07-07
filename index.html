@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Buffett + RSI/BB Screener v1.4.1</title>
+<title>Buffett + RSI/BB Screener v1.4.1 by Ben Sley</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.0/dist/chartjs-chart-financial.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/luxon@3.4/build/global/luxon.min.js"></script>
@@ -127,21 +127,23 @@ const calcMACD=(a,f=12,s=26)=>{if(a.length<s)return{h:Array(a.length).fill(null)
 const calcATR=(h,l,c,p=14)=>{if(c.length<p+1)return null;let tr=[];for(let i=1;i<c.length;i++)tr.push(Math.max(h[i]-l[i],Math.abs(h[i]-c[i-1]),Math.abs(l[i]-c[i-1])));return tr.slice(-p).reduce((x,y)=>x+y,0)/p};
 const calcDCF=(f,s,n,g,t,r)=>{let p=0;for(let i=1;i<=5;i++)p+=(f*Math.pow(1+g/100,i))/Math.pow(1+r/100,i);let f5=f*Math.pow(1+g/100,5),tv=(f5*(1+t/100))/(r/100-t/100);return(p+tv/Math.pow(1+r/100,5)-n)/s};
 
-// UPDATED BUFFETT FILTER v1.4.1 - Weights ROIC/ROE higher, stricter on debt
+// Buffett filter v1.4.2 - Only penalize bad data, don't penalize missing data
 const scoreBuffett=(s,m)=>{
-  let c=0;
-  // Quality: ROE and ROIC are king
-  if(s.roe5yr>15)c+=25;else if(s.roe5yr>12)c+=15;else if(s.roe5yr>8)c+=5;
-  if(s.roic>12)c+=25;else if(s.roic>10)c+=15;else if(s.roic>8)c+=5;
-  // Safety: Low debt critical
-  if(s.debtToEquity<0.3)c+=20;else if(s.debtToEquity<0.5)c+=10;
-  // Growth: Must have real growth
-  if(s.earningsGrowth5yr>5)c+=15;else if(s.earningsGrowth5yr>0)c+=8;
-  // Valuation: Reasonable price
-  if((s.pe>0&&s.pe<20)||s.pb<2)c+=10;
-  // Margin of Safety bonus
-  if(m>30)c+=5;
-  return Math.min(c,100)
+  let c=0, maxC=0;
+  // ROE: 25pts possible
+  maxC+=25; if(s.roe5yr!==null){if(s.roe5yr>15)c+=25;else if(s.roe5yr>12)c+=15;else if(s.roe5yr>8)c+=5;}
+  // ROIC: 25pts possible  
+  maxC+=25; if(s.roic!==null){if(s.roic>12)c+=25;else if(s.roic>10)c+=15;else if(s.roic>8)c+=5;}
+  // Debt: 20pts possible
+  maxC+=20; if(s.debtToEquity!==null){if(s.debtToEquity<0.3)c+=20;else if(s.debtToEquity<0.5)c+=10;}
+  // Growth: 15pts possible
+  maxC+=15; if(s.earningsGrowth5yr!==null){if(s.earningsGrowth5yr>5)c+=15;else if(s.earningsGrowth5yr>0)c+=8;}
+  // Valuation: 10pts possible
+  maxC+=10; if((s.pe>0&&s.pe<20)||s.pb<2)c+=10;
+  // MOS: 5pts possible
+  maxC+=5; if(m>30)c+=5;
+  // Return as percentage of available data
+  return maxC>0? Math.round((c/maxC)*100) : 0;
 };
 
 const scoreRSI=r=>r===null?0:r<30?100:r<40?70:r<60?50:r<70?30:0;
@@ -201,7 +203,7 @@ async function scanStocks(force=false) {
       let iv=calcDCF(d.fcf||0,d.shares||1,d.netDebt||0,g,gt,r),mos=d.price?(1-d.price/iv)*100:0;
       let bS=scoreBuffett(d,mos),rS=scoreRSI(rsi),tS=scoreTech(d.price,sma[sma.length-1],d.volumes[d.volumes.length-1],av,bb,macd);
       let rF=tS>=50?rS:0,hy=0.5*bS+0.3*rF+0.2*tS;
-      if (bS>=40) { // Lowered from 60 to 40
+      if (bS>=60) { // Lowered from 60 to 40
         let st=d.price*0.97,tg=d.price+1.5*(atr||d.price*0.02),sg=getSignal(rsi,d.price,st,tg);
         res.push({ticker:t,signal:sg,bScore:bS,rsi,tScore:tS,hybrid:hy,price:d.price,stop:st,target:tg,mos,pe:d.pe});
         if (watchlist.includes(t) && rsi<30 && tS>=75) new Notification(`Buy Signal: ${t}`, {body:`RSI ${rsi.toFixed(1)}, Tech ${tS}, Hybrid ${hy.toFixed(1)}`});
