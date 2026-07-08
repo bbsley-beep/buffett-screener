@@ -73,7 +73,7 @@ exports.handler = async (event) => {
         roe5yr: q.financialData?.returnOnEquity?.raw != null ? q.financialData.returnOnEquity.raw * 100 : null,
         roic: q.financialData?.returnOnAssets?.raw != null ? q.financialData.returnOnAssets.raw * 100 : null,
         debtToEquity: q.financialData?.debtToEquity?.raw != null ? q.financialData.debtToEquity.raw / 100 : null,
-        earningsGrowth5yr: q.defaultKeyStatistics?.earningsGrowth?.raw != null ? q.defaultKeyStatistics.earningsGrowth.raw * 100 : null,
+        earningsGrowth5yr: q.financialData?.earningsGrowth?.raw != null ? q.financialData.earningsGrowth.raw * 100 : null,
         fcf: q.financialData?.freeCashflow?.raw ?? null,
         shares: q.defaultKeyStatistics?.sharesOutstanding?.raw ?? null,
         netDebt: q.financialData?.totalDebt?.raw ?? null,
