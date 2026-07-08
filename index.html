@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Buffett + RSI/BB Screener v1.4.4</title>
+<title>Buffett + RSI/BB/MACD Screener v1.4.4</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.0/dist/chartjs-chart-financial.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/luxon@3.4/build/global/luxon.min.js"></script>
@@ -22,11 +22,11 @@
   button.watching { background: #dc2626; }
   input { background: #0f172a; border: 1px solid #334155; color: #e2e8f0; padding: 6px; border-radius: 4px; width: 80px; }
   label { display: block; font-size: 13px; margin-bottom: 4px; color: #cbd5e1; }
-  table { width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 8px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; background: #1e293b; }
   th, td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; font-size: 13px; }
-  th { background: #334155; font-weight: 600; position: sticky; top: 0; cursor: pointer; }
+  th { background: #334155; font-weight: 600; position: sticky; top: 0; z-index: 1; cursor: pointer; }
   th:hover { background: #475569; }
-.table-wrap { max-height: 600px; overflow-y: auto; }
+.table-wrap { max-height: 600px; overflow-y: auto; border-radius: 8px; }
 .score-high { color: #4ade80; font-weight: 700; }
 .score-med { color: #facc15; }
 .score-low { color: #f87171; }
@@ -49,7 +49,7 @@
 </head>
 <body>
 <div class="container">
-<h1>Buffett-Quality + RSI/BB Timing Screener v1.4.4</h1>
+<h1>Buffett-Quality + RSI/BB/MACD Timing Screener v1.4.4</h1>
 <div class="sub">S&P 500. 3-15 day swing targets. 3% stop loss. Click ticker for chart.</div>
 
 <div class="panel">
@@ -267,9 +267,9 @@ async function showChart(ticker) {
     const bb = calcBB(closes, 20, 2);
     const macd = calcMACD(closes);
 
-    if (priceChart) priceChart.destroy();
-    if (rsiChart) rsiChart.destroy();
-    if (macdChart) macdChart.destroy();
+    Chart.getChart('priceChart')?.destroy();
+    Chart.getChart('rsiChart')?.destroy();
+    Chart.getChart('macdChart')?.destroy();
 
     const ctx1 = document.getElementById('priceChart').getContext('2d');
     priceChart = new Chart(ctx1, {
@@ -344,9 +344,10 @@ window.showChart = showChart;
 
 function closeChart() {
   document.getElementById('chartModal').style.display = 'none';
-  if (priceChart) priceChart.destroy();
-  if (rsiChart) rsiChart.destroy();
-  if (macdChart) macdChart.destroy();
+  Chart.getChart('priceChart')?.destroy();
+  Chart.getChart('rsiChart')?.destroy();
+  Chart.getChart('macdChart')?.destroy();
+  priceChart = null; rsiChart = null; macdChart = null;
 }
 window.closeChart = closeChart;
 
