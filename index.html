@@ -57,8 +57,8 @@
     <div><label>DCF Growth 5yr %</label><input id="growthRate" type="number" value="8" step="0.5" title="Assumed 5-year forward FCF growth rate used in the DCF -- one of the Buffett-style quality inputs."></div>
     <div><label>Discount Rate %</label><input id="discountRate" type="number" value="10" step="0.5" title="Required annual rate of return used to discount future cash flows in the DCF (an equity/opportunity-cost assumption -- not the Fed's policy rate)."></div>
     <div><label>Account Size $</label><input id="accountSize" type="number" value="10000" step="1000"></div>
-    <div><label>Risk Per Trade %</label><input id="riskPct" type="number" value="1" step="0.25"></div>
-    <div><label>Stop Loss %</label><input id="stopPct" type="number" value="3" step="0.5" min="1" max="5" title="Percentage below entry price used as the stop-loss trigger (1-5%)."></div>
+    <div><label>Risk Per Trade %</label><input id="riskPct" type="number" value="1" step="0.25" title="Percentage of Account Size you're willing to lose if the stop-loss is hit. Combined with Stop Loss % and price, this sets the Shares column (position size) -- it does not set the exit price itself."></div>
+    <div><label>Stop Loss %</label><input id="stopPct" type="number" value="3" step="0.5" min="1" max="5" title="Percentage below entry price used as the stop-loss trigger (1-5%). This sets the exit price; Risk Per Trade % then sizes how many shares to buy given that exit price."></div>
   </div>
 </div>
 
