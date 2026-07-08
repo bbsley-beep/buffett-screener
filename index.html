@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Buffett + RSI/BB Screener v1.4.1 by Ben Sley</title>
+<title>Buffett + RSI/BB Screener v1.4.1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.0/dist/chartjs-chart-financial.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/luxon@3.4/build/global/luxon.min.js"></script>
@@ -139,7 +139,7 @@ const scoreBuffett=(s,m)=>{
   // Growth: 15pts possible
   maxC+=15; if(s.earningsGrowth5yr!==null){if(s.earningsGrowth5yr>5)c+=15;else if(s.earningsGrowth5yr>0)c+=8;}
   // Valuation: 10pts possible
-  maxC+=10; if((s.pe>0&&s.pe<20)||s.pb<2)c+=10;
+  maxC+=10; if((s.pe!==null&&s.pe>0&&s.pe<20)||(s.pb!==null&&s.pb<2))c+=10;
   // MOS: 5pts possible
   maxC+=5; if(m>30)c+=5;
   // Return as percentage of available data
@@ -200,10 +200,10 @@ async function scanStocks(force=false) {
       if(!d.closes || d.closes.length<50) continue;
       let rsiArr=calcRSI(d.closes),rsi=rsiArr[rsiArr.length-1],sma=calcSMA(d.closes,20),bb=calcBB(d.closes),macd=calcMACD(d.closes);
       let atr=calcATR(d.highs,d.lows,d.closes),av=d.volumes.slice(-20).reduce((a,b)=>a+b,0)/20;
-      let iv=calcDCF(d.fcf||0,d.shares||1,d.netDebt||0,g,gt,r),mos=d.price?(1-d.price/iv)*100:0;
+      let iv=(d.fcf!=null&&d.shares!=null)?calcDCF(d.fcf,d.shares,d.netDebt||0,g,gt,r):null,mos=(d.price&&iv)?(1-d.price/iv)*100:0;
       let bS=scoreBuffett(d,mos),rS=scoreRSI(rsi),tS=scoreTech(d.price,sma[sma.length-1],d.volumes[d.volumes.length-1],av,bb,macd);
       let rF=tS>=50?rS:0,hy=0.5*bS+0.3*rF+0.2*tS;
-      if (bS>=60) { // Lowered from 60 to 40
+      if (bS>=40) { // Lowered from 60 to 40
         let st=d.price*0.97,tg=d.price+1.5*(atr||d.price*0.02),sg=getSignal(rsi,d.price,st,tg);
         res.push({ticker:t,signal:sg,bScore:bS,rsi,tScore:tS,hybrid:hy,price:d.price,stop:st,target:tg,mos,pe:d.pe});
         if (watchlist.includes(t) && rsi<30 && tS>=75) new Notification(`Buy Signal: ${t}`, {body:`RSI ${rsi.toFixed(1)}, Tech ${tS}, Hybrid ${hy.toFixed(1)}`});
