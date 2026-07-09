@@ -403,15 +403,16 @@ function exportCSV() {
 }
 
 function buildAIPrompt(results) {
-  // Capped at 15 candidates and a ~400 word response as a stopgap: Netlify's synchronous
+  // Capped at 10 candidates and a ~400 word response as a stopgap: Netlify's synchronous
   // function timeout (~29s, platform-level, not configurable) was measured to be shorter than
   // the generation time a full 30-stock/900-word request needs for a genuinely diverse scan.
+  // Even 15 candidates only left ~7s of margin under that ceiling; 10 gives more headroom.
   // Proper fix (background function + polling, no realistic time ceiling) is deferred to the
   // dedicated AI Analysis architecture session, alongside the shared-daily-cache idea.
-  const top15 = [...results].sort((a,b) => b.hybrid - a.hybrid).slice(0, 15);
+  const top10 = [...results].sort((a,b) => b.hybrid - a.hybrid).slice(0, 10);
   const sellFlags = results.filter(x => x.signal === 'SELL');
 
-  let buyRows = top15.map(x =>
+  let buyRows = top10.map(x =>
     `${x.ticker} | Quality:${x.bScore} | EPS Growth 5yr:${x.earningsGrowth5yr!=null?x.earningsGrowth5yr.toFixed(1)+'%':'N/A'} | RSI:${x.rsi?.toFixed(1)||'N/A'} | Tech:${x.tScore} | MACD:${x.macdState} | SMA20 Trend:${x.smaTrendPct!=null?(x.smaTrendPct>=0?'+':'')+x.smaTrendPct.toFixed(1)+'%':'N/A'} | Rel Volume:${x.volRatio!=null?x.volRatio.toFixed(2)+'x':'N/A'} | BB Position:${x.bbPositionPct!=null?x.bbPositionPct.toFixed(0)+'%':'N/A'} | Hybrid:${x.hybrid.toFixed(1)} | Price:$${x.price.toFixed(2)} | Stop:$${x.stop.toFixed(2)} | Target:$${x.target.toFixed(2)} | DCF MOS:${x.mos.toFixed(1)}% | Signal:${x.signal}`
   ).join('\n');
 
@@ -421,7 +422,7 @@ function buildAIPrompt(results) {
 
   return `You are analyzing a stock screener's output for a 3-15 day swing-trading strategy. Below are two lists drawn from S&P 500 stocks that passed a quality fundamental filter (score >= 40), each with a technical timing score, MACD crossover state, and raw technical detail (SMA20 trend, relative volume, Bollinger Band position).
 
-LIST 1 -- Top ${top15.length} candidates by Hybrid score (highest first):
+LIST 1 -- Top ${top10.length} candidates by Hybrid score (highest first):
 ${buyRows}
 
 LIST 2 -- Stocks the app's own signal logic already flags as SELL/overbought (avoid new entries / reconsider if held; this app is long-only and does not screen for shorts):
