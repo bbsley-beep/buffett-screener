@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blue Chip Swing Trader v1.4.7</title>
+<title>Blue Chip Swing Trader v1.4.15</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.0/dist/chartjs-chart-financial.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/luxon@3.4/build/global/luxon.min.js"></script>
@@ -134,7 +134,7 @@
 
 <script>
 let SP500 = [];
-const CACHE_KEY = 'buffettScan_v1_4_7';
+const CACHE_KEY = 'buffettScan_v1_4_15';
 const WATCH_KEY = 'buffettWatchlist_v1_4_1';
 const TICKER_KEY = 'sp500Tickers_v1_4_1';
 const TERMINAL_GROWTH_PCT = 2.5; // Hardcoded terminal growth rate for DCF (was a user input; locked -- real-world variance here is negligible)
@@ -154,6 +154,7 @@ const calcRSI = (c,p=14)=>{if(c.length<p+1)return Array(c.length).fill(null);let
 const calcSMA = (a,p)=>{let r=[];for(let i=0;i<a.length;i++){if(i<p-1)r.push(null);else r.push(a.slice(i-p+1,i+1).reduce((x,y)=>x+y,0)/p)}return r};
 const calcStdDev=(a,p)=>{let s=calcSMA(a,p),r=[];for(let i=0;i<a.length;i++){if(i<p-1||s[i]===null)r.push(null);else r.push(Math.sqrt(a.slice(i-p+1,i+1).reduce((x,y)=>x+Math.pow(y-s[i],2),0)/p))}return r};
 const calcBB=(a,p=20,d=2)=>{let m=calcSMA(a,p),s=calcStdDev(a,p),u=[],l=[];for(let i=0;i<a.length;i++){u.push(m[i]!==null&&s[i]!==null?m[i]+d*s[i]:null);l.push(m[i]!==null&&s[i]!==null?m[i]-d*s[i]:null)}return{u,m,l}};
+const calcBBWidth=(bb)=>bb.u.map((u,i)=>(u!=null&&bb.l[i]!=null&&bb.m[i])?((u-bb.l[i])/bb.m[i])*100:null);
 const calcMACD=(a,f=12,s=26,sig=9)=>{if(a.length<s)return{macd:Array(a.length).fill(null),signal:Array(a.length).fill(null),hist:Array(a.length).fill(null)};let em=(p,d)=>{let k=2/(p+1),e=d.slice(0,p).reduce((x,y)=>x+y,0)/p,r=[...Array(p-1).fill(null),e];for(let i=p;i<d.length;i++){e=d[i]*k+e*(1-k);r.push(e)}return r};let ef=em(f,a),es=em(s,a),macd=[];for(let i=0;i<a.length;i++)macd.push(ef[i]!==null&&es[i]!==null?ef[i]-es[i]:null);let i0=s-1,sigTail=em(sig,macd.slice(i0)),signal=[...Array(i0).fill(null),...sigTail],hist=macd.map((v,i)=>v!==null&&signal[i]!==null?v-signal[i]:null);return{macd,signal,hist}};
 const calcATR=(h,l,c,p=14)=>{if(c.length<p+1)return null;let tr=[];for(let i=1;i<c.length;i++)tr.push(Math.max(h[i]-l[i],Math.abs(h[i]-c[i-1]),Math.abs(l[i]-c[i-1])));return tr.slice(-p).reduce((x,y)=>x+y,0)/p};
 const calcDCF=(f,s,n,g,t,r)=>{let p=0;for(let i=1;i<=5;i++)p+=(f*Math.pow(1+g/100,i))/Math.pow(1+r/100,i);let f5=f*Math.pow(1+g/100,5),tv=(f5*(1+t/100))/(r/100-t/100);return(p+tv/Math.pow(1+r/100,5)-n)/s};
@@ -179,8 +180,9 @@ const scoreBuffett=(s,m)=>{
 
 const scoreRSI=r=>r===null?0:r<30?100:r<40?70:r<60?50:r<70?30:0;
 // MACD criterion: histogram (MACD-signal) > 0 = bullish crossover state, not raw MACD>0 (which just duplicates the price>SMA trend check above)
-// Note: b.l/m.hist are full time-series arrays -- must index the latest value, not compare the array itself (this was previously broken for both the BB and MACD criteria)
-const scoreTech=(p,s,v,a,b,m)=>{let c=0,bl=b.l[b.l.length-1],mh=m.hist[m.hist.length-1];if(p>s)c+=25;if(v>1.5*a)c+=25;if(bl!==null&&p<=bl*1.02)c+=25;if(mh!==null&&mh>0)c+=25;return c};
+// BB criterion: lower-half band position OR a volatility squeeze (narrow band relative to its own recent average) -- short-term swing setups
+// want room to run (lower half) or an imminent breakout (squeeze), not strictly "hugging the lower band" as the old threshold required.
+const scoreTech=(p,s,v,a,m,bbPos,isSqueeze)=>{let c=0,mh=m.hist[m.hist.length-1];if(p>s)c+=25;if(v>1.5*a)c+=25;if((bbPos!=null&&bbPos<50)||isSqueeze)c+=25;if(mh!==null&&mh>0)c+=25;return c};
 const getSignal=(r,p,s,t)=>r>70?'SELL':p<=s?'STOP':p>=t?'TARGET':r<30?'BUY':'HOLD';
 
 async function loadSP500Tickers() {
@@ -234,14 +236,16 @@ async function scanStocks(force=false) {
       let rsiArr=calcRSI(d.closes),rsi=rsiArr[rsiArr.length-1],sma=calcSMA(d.closes,20),bb=calcBB(d.closes),macd=calcMACD(d.closes);
       let atr=calcATR(d.highs,d.lows,d.closes),av=d.volumes.slice(-20).reduce((a,b)=>a+b,0)/20;
       let iv=(d.fcf!=null&&d.shares!=null)?calcDCF(d.fcf,d.shares,d.netDebt||0,g,TERMINAL_GROWTH_PCT,r):null,mos=(d.price&&iv)?(1-d.price/iv)*100:0;
-      let bS=scoreBuffett(d,mos),rS=scoreRSI(rsi),tS=scoreTech(d.price,sma[sma.length-1],d.volumes[d.volumes.length-1],av,bb,macd);
-      let macdLast=macd.hist[macd.hist.length-1],macdState=macdLast===null?'N/A':macdLast>0?'Bull':'Bear';
       let smaLast=sma[sma.length-1],volLast=d.volumes[d.volumes.length-1];
       let smaTrendPct=smaLast?((d.price-smaLast)/smaLast)*100:null;
       let volRatio=av?volLast/av:null;
       let bbLower=bb.l[bb.l.length-1],bbUpper=bb.u[bb.u.length-1];
       let bbPositionPct=(bbLower!=null&&bbUpper!=null&&bbUpper!==bbLower)?((d.price-bbLower)/(bbUpper-bbLower))*100:null;
-      let rF=tS>=50?rS:0,hy=0.5*bS+0.3*rF+0.2*tS;
+      let bbWidth=calcBBWidth(bb),widthLast=bbWidth[bbWidth.length-1],validWidths=bbWidth.filter(w=>w!=null),avgWidth=validWidths.length?validWidths.reduce((x,y)=>x+y,0)/validWidths.length:null;
+      let isSqueeze=(widthLast!=null&&avgWidth!=null)?widthLast<avgWidth*0.75:false;
+      let bS=scoreBuffett(d,mos),rS=scoreRSI(rsi),tS=scoreTech(d.price,sma[sma.length-1],d.volumes[d.volumes.length-1],av,macd,bbPositionPct,isSqueeze);
+      let macdLast=macd.hist[macd.hist.length-1],macdState=macdLast===null?'N/A':macdLast>0?'Bull':'Bear';
+      let rF=tS>=50?rS:0,hy=0.2*bS+0.3*rF+0.5*tS;
       if (bS>=40) { // Lowered from 60 to 40
         let st=d.price*(1-stopPct/100),tg=d.price+1.5*(atr||d.price*0.02),sg=getSignal(rsi,d.price,st,tg);
         res.push({ticker:t,signal:sg,bScore:bS,rsi,tScore:tS,macdState,hybrid:hy,price:d.price,stop:st,target:tg,mos,pe:d.pe,earningsGrowth5yr:d.earningsGrowth5yr,smaTrendPct,volRatio,bbPositionPct});
@@ -409,7 +413,7 @@ function buildAIPrompt(results) {
   // Even 15 candidates only left ~7s of margin under that ceiling; 10 gives more headroom.
   // Proper fix (background function + polling, no realistic time ceiling) is deferred to the
   // dedicated AI Analysis architecture session, alongside the shared-daily-cache idea.
-  const top10 = [...results].sort((a,b) => b.hybrid - a.hybrid).slice(0, 10);
+  const top10 = results.filter(x => x.rsi < 50).sort((a,b) => b.hybrid - a.hybrid).slice(0, 10);
   const sellFlags = results.filter(x => x.signal === 'SELL');
 
   let buyRows = top10.map(x =>
