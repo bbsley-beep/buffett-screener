@@ -3,29 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Buffett + RSI/BB/MACD Screener v1.4.7</title>
+<title>Blue Chip Swing Trader v1.4.7</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.0/dist/chartjs-chart-financial.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/luxon@3.4/build/global/luxon.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.umd.min.js"></script>
 <style>
-  body { font-family: -apple-system, sans-serif; margin: 0; background: #0f172a; color: #e2e8f0; }
+  body { font-family: -apple-system, sans-serif; margin: 0; background: #0a0e1a; color: #e2e8f0; }
 .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-  h1 { color: #f8fafc; margin: 0 0 8px 0; }
+  h1 { font-family: Georgia, 'Times New Roman', serif; color: #f8fafc; margin: 0 0 8px 0; font-weight: 700; }
 .sub { color: #94a3b8; margin-bottom: 20px; }
-.panel { background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 16px; }
+.panel { background: #0f1729; padding: 20px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #1e2740; }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
-  button { background: #4f8fef; color: white; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: 600; margin-right: 8px; }
-  button:disabled { background: #475569; cursor: not-allowed; }
-  button.secondary { background: #475569; }
-  button.watch { background: #059669; padding: 4px 8px; font-size: 11px; }
-  button.watching { background: #dc2626; }
-  input { background: #0f172a; border: 1px solid #334155; color: #e2e8f0; padding: 8px; border-radius: 8px; width: 80px; }
-  label { display: block; font-size: 13px; margin-bottom: 4px; color: #cbd5e1; }
-  table { width: 100%; border-collapse: collapse; background: #1e293b; }
-  th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; font-size: 13px; }
-  th { background: #334155; font-weight: 600; position: sticky; top: 0; z-index: 1; cursor: pointer; }
-  th:hover { background: #475569; }
+  button { background: #c9a227; color: #0a0e1a; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: 600; margin-right: 8px; }
+  button:hover { background: #d4af37; }
+  button:disabled { background: #3a3f4d; color: #8a8f9c; cursor: not-allowed; }
+  button.secondary { background: transparent; color: #c9a227; border: 1px solid #c9a227; }
+  button.secondary:hover { background: rgba(201, 162, 39, 0.12); }
+  button.watch { background: #059669; color: white; padding: 4px 8px; font-size: 11px; }
+  button.watching { background: #dc2626; color: white; }
+  input { background: #0a0e1a; border: 1px solid #1e2740; color: #e2e8f0; padding: 8px; border-radius: 8px; width: 80px; }
+  label { display: block; font-size: 11px; margin-bottom: 4px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; }
+  table { width: 100%; border-collapse: collapse; background: #0f1729; }
+  th, td { padding: 12px; text-align: left; border-bottom: 1px solid #1e2740; font-size: 13px; }
+  th { background: #16213a; font-weight: 600; position: sticky; top: 0; z-index: 1; cursor: pointer; }
+  th:hover { background: #1c2942; }
 .table-wrap { max-height: 600px; overflow-y: auto; border-radius: 12px; }
 .score-high { color: #4ade80; font-weight: 700; }
 .score-med { color: #facc15; }
@@ -35,26 +37,26 @@
 .badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; }
 .badge-buy { background: #1d7a43; color: #bbf7d0; }
 .badge-sell { background: #9a4040; color: #fecaca; }
-.badge-hold { background: #475569; color: #cbd5e1; }
-.ticker-link { color: #60a5fa; cursor: pointer; text-decoration: underline; }
-.ticker-link:hover { color: #93c5fd; }
+.badge-hold { background: #3a3f4d; color: #cbd5e1; }
+.ticker-link { color: #c9a227; cursor: pointer; text-decoration: underline; }
+.ticker-link:hover { color: #d4af37; }
 .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); }
-.modal-content { background: #1e293b; margin: 2% auto; padding: 20px; border-radius: 12px; width: 90%; max-width: 1200px; max-height: 90vh; overflow-y: auto; }
+.modal-content { background: #0f1729; margin: 2% auto; padding: 20px; border-radius: 12px; width: 90%; max-width: 1200px; max-height: 90vh; overflow-y: auto; border: 1px solid #1e2740; }
 .close { color: #94a3b8; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
 .close:hover { color: #f8fafc; }
 .chart-container { position: relative; height: 400px; margin-bottom: 20px; }
-.chart-title { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+.chart-title { font-family: Georgia, 'Times New Roman', serif; font-size: 18px; font-weight: 700; margin-bottom: 10px; }
 .disclaimer { margin-top: 20px; font-size: 12px; color: #64748b; line-height: 1.6; }
 </style>
 </head>
 <body>
 <div class="container">
-<h1>Buffett-Quality + RSI/BB/MACD Timing Screener v1.4.7</h1>
-<div class="sub">S&P 500. 3-15 day swing targets. Adjustable stop loss. Click ticker for chart.</div>
+<h1><span style="color:#3b82f6;">Blue</span> <span style="color:#f8fafc;">Chip</span><span style="color:#22c55e;"> Swing Trader</span><sup style="font-size:0.5em;">™</sup></h1>
+<div class="sub">Quality-fundamentals + RSI/BB/MACD timing screener for S&P 500. 3-15 day swing targets. Adjustable stop loss. Click ticker for chart.</div>
 
 <div class="panel">
   <div class="grid">
-    <div><label>DCF Growth 5yr %</label><input id="growthRate" type="number" value="8" step="0.5" title="Assumed 5-year forward FCF growth rate used in the DCF -- one of the Buffett-style quality inputs."></div>
+    <div><label>DCF Growth 5yr %</label><input id="growthRate" type="number" value="8" step="0.5" title="Assumed 5-year forward FCF growth rate used in the DCF -- one of the value-investing quality inputs."></div>
     <div><label>Discount Rate %</label><input id="discountRate" type="number" value="10" step="0.5" title="Required annual rate of return used to discount future cash flows in the DCF (an equity/opportunity-cost assumption -- not the Fed's policy rate)."></div>
     <div><label>Account Size $</label><input id="accountSize" type="number" value="10000" step="1000"></div>
     <div><label>Risk Per Trade %</label><input id="riskPct" type="number" value="1" step="0.25" title="Percentage of Account Size you're willing to lose if the stop-loss is hit. Combined with Stop Loss % and price, this sets the Shares column (position size) -- it does not set the exit price itself."></div>
@@ -77,7 +79,7 @@
 <table id="resultsTable">
   <thead><tr>
     <th onclick="sortTable(0)">Ticker</th><th onclick="sortTable(1)">Signal</th><th>Watch</th>
-    <th onclick="sortTable(3)">Buffett</th><th onclick="sortTable(4)">RSI</th><th onclick="sortTable(5)">Tech</th>
+    <th onclick="sortTable(3)">Quality</th><th onclick="sortTable(4)">RSI</th><th onclick="sortTable(5)">Tech</th>
     <th onclick="sortTable(6)">MACD</th><th onclick="sortTable(7)">Hybrid</th><th onclick="sortTable(8)">Price</th><th onclick="sortTable(9)">Stop</th>
     <th onclick="sortTable(10)">Target</th><th onclick="sortTable(11)">Shares</th><th onclick="sortTable(12)">DCF MOS</th>
   </tr></thead>
@@ -94,8 +96,7 @@
 </div>
 
 <div class="disclaimer">
-  <strong>Disclaimer:</strong> Not financial advice. This tool blends Buffett-style fundamental screens with technical timing for educational purposes.
-  Buffett does not trade short-term or use RSI/Bollinger Bands. 3-15 day holds on stocks are speculative and risky. Always use stops.
+  <strong>Disclaimer:</strong> Not financial advice. This tool applies fundamental quality screens inspired by well-known value-investing principles, combined with short-term technical timing indicators, for educational purposes. Warren Buffett is not affiliated with this product and does not endorse it in any way; he does not trade short-term or use RSI/Bollinger Bands/MACD, and 3-15 day holds are speculative and carry meaningfully different risk than long-term value investing. <!-- Placeholder pending the user's final disclaimer text on trading risk and non-affiliation. --> Always use stops.
   Past performance ≠ future results. Data via Yahoo Finance. Charts via Chart.js. Browser notifications require permission.
   Using "AI Analysis" sends your current qualifying stock list (tickers and scores only, no personal data) to Anthropic's Claude API for analysis; see Anthropic's privacy policy for how that data is handled.
 </div>
@@ -252,7 +253,7 @@ function renderResults(r) {
     <td>$${x.price.toFixed(2)}</td><td>$${x.stop.toFixed(2)}</td><td>$${x.target.toFixed(2)}</td>
     <td>${sh>0?sh:'-'}</td><td>${x.mos.toFixed(1)}%</td>`; resultsBody.appendChild(tr);
   });
-  statusEl.textContent=`Done. ${r.length} Buffett-qualified stocks. Cache updated. Click ticker for chart.`;
+  statusEl.textContent=`Done. ${r.length} qualifying stocks. Cache updated. Click ticker for chart.`;
 }
 
 function toggleWatch(t) {
@@ -367,7 +368,7 @@ async function enableNotifications() {
 
 function exportCSV() {
   if (lastResults.length === 0) { alert('No results to export. Run a scan first.'); return; }
-  let csv = 'Ticker,Signal,Buffett,RSI,Tech,MACD,Hybrid,Price,Stop,Target,MOS\n';
+  let csv = 'Ticker,Signal,Quality,RSI,Tech,MACD,Hybrid,Price,Stop,Target,MOS\n';
   lastResults.forEach(x => {
     csv += `${x.ticker},${x.signal},${x.bScore},${x.rsi?.toFixed(1)||''},${x.tScore},${x.macdState},${x.hybrid.toFixed(1)},${x.price.toFixed(2)},${x.stop.toFixed(2)},${x.target.toFixed(2)},${x.mos.toFixed(1)}\n`;
   });
@@ -375,7 +376,7 @@ function exportCSV() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `buffett-scan-${new Date().toISOString().split('T')[0]}.csv`;
+  a.download = `bluechip-scan-${new Date().toISOString().split('T')[0]}.csv`;
   a.click();
 }
 
@@ -384,14 +385,14 @@ function buildAIPrompt(results) {
   const sellFlags = results.filter(x => x.signal === 'SELL');
 
   let buyRows = top30.map(x =>
-    `${x.ticker} | Buffett:${x.bScore} | EPS Growth 5yr:${x.earningsGrowth5yr!=null?x.earningsGrowth5yr.toFixed(1)+'%':'N/A'} | RSI:${x.rsi?.toFixed(1)||'N/A'} | Tech:${x.tScore} | MACD:${x.macdState} | SMA20 Trend:${x.smaTrendPct!=null?(x.smaTrendPct>=0?'+':'')+x.smaTrendPct.toFixed(1)+'%':'N/A'} | Rel Volume:${x.volRatio!=null?x.volRatio.toFixed(2)+'x':'N/A'} | BB Position:${x.bbPositionPct!=null?x.bbPositionPct.toFixed(0)+'%':'N/A'} | Hybrid:${x.hybrid.toFixed(1)} | Price:$${x.price.toFixed(2)} | Stop:$${x.stop.toFixed(2)} | Target:$${x.target.toFixed(2)} | DCF MOS:${x.mos.toFixed(1)}% | Signal:${x.signal}`
+    `${x.ticker} | Quality:${x.bScore} | EPS Growth 5yr:${x.earningsGrowth5yr!=null?x.earningsGrowth5yr.toFixed(1)+'%':'N/A'} | RSI:${x.rsi?.toFixed(1)||'N/A'} | Tech:${x.tScore} | MACD:${x.macdState} | SMA20 Trend:${x.smaTrendPct!=null?(x.smaTrendPct>=0?'+':'')+x.smaTrendPct.toFixed(1)+'%':'N/A'} | Rel Volume:${x.volRatio!=null?x.volRatio.toFixed(2)+'x':'N/A'} | BB Position:${x.bbPositionPct!=null?x.bbPositionPct.toFixed(0)+'%':'N/A'} | Hybrid:${x.hybrid.toFixed(1)} | Price:$${x.price.toFixed(2)} | Stop:$${x.stop.toFixed(2)} | Target:$${x.target.toFixed(2)} | DCF MOS:${x.mos.toFixed(1)}% | Signal:${x.signal}`
   ).join('\n');
 
   let sellRows = sellFlags.length > 0
     ? sellFlags.map(x => `${x.ticker} | RSI:${x.rsi?.toFixed(1)||'N/A'} | MACD:${x.macdState} | Hybrid:${x.hybrid.toFixed(1)}`).join('\n')
     : '(none currently flagged)';
 
-  return `You are analyzing a stock screener's output for a 3-15 day swing-trading strategy. Below are two lists drawn from S&P 500 stocks that passed a Buffett-quality fundamental filter (score >= 40), each with a technical timing score, MACD crossover state, and raw technical detail (SMA20 trend, relative volume, Bollinger Band position).
+  return `You are analyzing a stock screener's output for a 3-15 day swing-trading strategy. Below are two lists drawn from S&P 500 stocks that passed a quality fundamental filter (score >= 40), each with a technical timing score, MACD crossover state, and raw technical detail (SMA20 trend, relative volume, Bollinger Band position).
 
 LIST 1 -- Top ${top30.length} candidates by Hybrid score (highest first):
 ${buyRows}
@@ -399,7 +400,7 @@ ${buyRows}
 LIST 2 -- Stocks the app's own signal logic already flags as SELL/overbought (avoid new entries / reconsider if held; this app is long-only and does not screen for shorts):
 ${sellRows}
 
-From LIST 1, pick the ~10 best candidates to buy/hold long right now for a 3-15 day swing window. For each pick, give 1-2 sentences of reasoning referencing its Buffett score, EPS growth, RSI, Tech score, MACD state, SMA trend, relative volume, BB position, and DCF margin of safety. Then, using LIST 2, write a short "Stocks to Avoid / Reconsider" section briefly explaining why each is flagged (e.g. overbought RSI, bearish MACD despite good fundamentals) -- do not re-derive or second-guess the SELL flag, just explain it using the given stats. Do not suggest short-selling or put-buying; this is a long-only screen. This is not financial advice -- say so explicitly once. Keep the entire response under about 900 words.`;
+From LIST 1, pick the ~10 best candidates to buy/hold long right now for a 3-15 day swing window. For each pick, give 1-2 sentences of reasoning referencing its Quality score, EPS growth, RSI, Tech score, MACD state, SMA trend, relative volume, BB position, and DCF margin of safety. Then, using LIST 2, write a short "Stocks to Avoid / Reconsider" section briefly explaining why each is flagged (e.g. overbought RSI, bearish MACD despite good fundamentals) -- do not re-derive or second-guess the SELL flag, just explain it using the given stats. Do not suggest short-selling or put-buying; this is a long-only screen. This is not financial advice -- say so explicitly once. Keep the entire response under about 900 words.`;
 }
 
 async function fetchAIAnalysis() {
