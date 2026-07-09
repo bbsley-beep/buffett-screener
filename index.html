@@ -440,8 +440,10 @@ async function fetchAIAnalysis() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-    const text = data.content?.[0]?.text;
+    const textBlock = data.content?.find(c => c.type === 'text');
+    const text = textBlock?.text;
     if (!text) throw new Error('No content returned from Claude');
+    if (data.stop_reason === 'max_tokens') console.warn('AI Analysis response was truncated (max_tokens reached)');
     document.getElementById('aiOutput').textContent = text;
   } catch (e) {
     console.error('AI analysis error', e);
