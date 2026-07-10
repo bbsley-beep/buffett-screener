@@ -95,7 +95,6 @@
   <button id="bracketBtn" class="secondary" disabled title="Add your Anthropic API key first (API Key Settings) to use AI Bracket.">Run AI Bracket</button>
   <span id="status" class="loading">Ready. Cache: None</span>
 </div>
-<div class="sub" style="margin-bottom:8px;">AI Bracket uses your own Anthropic API key and makes 4 billed API calls per run. You are charged directly by Anthropic.</div>
 
 <div class="sub" style="margin-bottom:8px;">Click a column header to sort; click again to reverse direction. Ticker sorts alphabetically.</div>
 <div class="table-wrap">
@@ -214,6 +213,9 @@
     <div class="chart-title">Anthropic API Key (BYOK)</div>
     <div style="font-size:11px; color:#fecaca; border:1px solid #dc2626; border-radius:6px; padding:8px 10px; margin:12px 0;">
       This key is stored only in this browser's local storage, at your own risk -- it is not like your watchlist or positions data, it is a billable credential. Anyone with access to this browser could use it. We recommend setting a spending limit for this key on your Anthropic console.
+    </div>
+    <div style="font-size:11px; color:#94a3b8; margin-bottom:12px;">
+      A typical AI Bracket run costs only a few cents on your Anthropic account -- well under $0.10 for the full 4-comparison bracket.
     </div>
     <div style="display:flex; flex-direction:column; gap:12px;">
       <div><label>API Key</label><input id="byokKeyInput" type="password" placeholder="sk-ant-..." style="width:100%;"></div>
@@ -490,7 +492,7 @@ function updateBracketButtonState() {
     bracketBtn.title = `AI Bracket needs exactly 9 qualifying candidates (currently ${n}). Run a scan and try again.`;
   } else {
     bracketBtn.disabled = false;
-    bracketBtn.title = 'Runs 4 real Anthropic API calls billed to your own key.';
+    bracketBtn.title = 'Uses your own Anthropic API key -- typically a few cents per run.';
   }
 }
 
