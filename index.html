@@ -54,11 +54,17 @@
 .chart-container { position: relative; height: 400px; margin-bottom: 20px; }
 .chart-title { font-family: Georgia, 'Times New Roman', serif; font-size: 18px; font-weight: 700; margin-bottom: 10px; }
 .disclaimer { margin-top: 20px; font-size: 12px; color: #64748b; line-height: 1.6; }
+.header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.brand-logo { height: 56px; width: auto; display: block; }
+@media (max-width: 640px) { .brand-logo { height: 26px; } }
 </style>
 </head>
 <body>
 <div class="container">
-<h1><span style="color:#3b82f6;">Blue</span> <span style="color:#f8fafc;">Chip</span><span style="color:#22c55e;"> Swing Trader</span><sup style="font-size:0.5em;">™</sup></h1>
+<div class="header-row">
+  <h1><span style="color:#3b82f6;">Blue</span> <span style="color:#f8fafc;">Chip</span><span style="color:#22c55e;"> Swing Trader</span><sup style="font-size:0.5em;">™</sup></h1>
+  <img src="logo.png" alt="Blue Chip Swing Trader logo" class="brand-logo">
+</div>
 <div class="sub">Quality-fundamentals + RSI/BB/MACD timing screener for S&P 500. 3-15 day swing targets. Adjustable stop loss. Click ticker for chart.</div>
 
 <div class="panel">
