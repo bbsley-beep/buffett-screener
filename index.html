@@ -159,6 +159,9 @@
   <div style="font-size:11px; color:#c9a227; border:1px solid #c9a227; border-radius:6px; padding:8px 10px; margin-bottom:10px;">
     These results are proprietary to Blue Chip Swing Trader&trade; and licensed to the individual User according to the Terms of Service. This content may not be copied, distributed, or shared with anyone other than the individual User.
   </div>
+  <div style="font-size:11px; color:#94a3b8; margin-bottom:10px;">
+    Confidence reflects the AI's self-assessed edge in this specific 3-way comparison, on a scale from 33% (no better than a random guess among the 3 candidates) to 100% (certain). Moderate scores are expected for genuinely close calls between quality candidates -- they don't indicate a weak pick.
+  </div>
   <div id="bracketProgress" style="font-size:12px; color:#94a3b8; margin-bottom:10px; white-space:pre-line;"></div>
   <div id="bracketOutput" style="font-size:13px; line-height:1.6;"></div>
 </div>
@@ -519,7 +522,7 @@ function buildSelectWinnerTool(tickers, isFinal) {
       type: 'object',
       properties: {
         winner: { type: 'string', enum: tickers, description: 'Ticker of the winning candidate.' },
-        confidence: { type: 'integer', description: 'Confidence in this pick, 0 (coin flip) to 100 (certain).' },
+        confidence: { type: 'integer', description: 'Confidence in this pick, 33 (no better than random guessing among these 3 candidates) to 100 (certain).' },
         reasoning: {
           type: 'string',
           description: isFinal
