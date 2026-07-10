@@ -100,6 +100,35 @@
 </table>
 </div>
 
+<div class="panel">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+    <div style="font-weight:600; color:#f8fafc;">My Positions</div>
+    <div>
+      <button id="refreshPositionsBtn" class="secondary">Refresh Prices</button>
+      <button id="addPositionBtn">+ Enter Position</button>
+    </div>
+  </div>
+  <div class="sub" style="margin-bottom:8px;">Open Positions</div>
+  <div class="table-wrap" style="max-height:300px;">
+    <table id="positionsTable">
+      <thead><tr>
+        <th>Ticker</th><th>Buy Price</th><th>Shares</th><th>Buy Date</th><th>Current Price</th><th>P&amp;L $</th><th>P&amp;L %</th><th></th>
+      </tr></thead>
+      <tbody id="positionsBody"></tbody>
+    </table>
+  </div>
+  <div class="sub" style="margin:16px 0 8px;">Closed Positions</div>
+  <div class="table-wrap" style="max-height:200px;">
+    <table id="closedPositionsTable">
+      <thead><tr>
+        <th>Ticker</th><th>Buy Price</th><th>Shares</th><th>Buy Date</th><th>Exit Price</th><th>Exit Date</th><th>Realized P&amp;L $</th><th>Realized P&amp;L %</th><th></th>
+      </tr></thead>
+      <tbody id="closedPositionsBody"></tbody>
+    </table>
+  </div>
+  <div id="portfolioSummary" style="margin-top:12px; font-size:13px; color:#94a3b8;"></div>
+</div>
+
 <div id="aiPanel" class="panel" style="display:none;">
   <div style="font-weight:600; margin-bottom:8px; color:#f8fafc;">AI Trade Analysis</div>
   <div style="font-size:11px; color:#c9a227; border:1px solid #c9a227; border-radius:6px; padding:8px 10px; margin-bottom:10px;">
@@ -134,13 +163,36 @@
   </div>
 </div>
 
+<div id="positionModal" class="modal">
+  <div class="modal-content" style="max-width:400px;">
+    <span class="close" onclick="closePositionModal()">&times;</span>
+    <div id="positionModalTitle" class="chart-title">Enter Position</div>
+    <div style="display:flex; flex-direction:column; gap:12px; margin-top:12px;">
+      <div><label>Ticker</label><input id="posTicker" type="text" style="width:100%; text-transform:uppercase;"></div>
+      <div id="posBuyFields"><label>Buy Price ($)</label><input id="posBuyPrice" type="number" step="0.01" style="width:100%;"></div>
+      <div id="posSharesField"><label>Shares</label><input id="posShares" type="number" step="1" style="width:100%;"></div>
+      <div id="posBuyDateField"><label>Buy Date</label><input id="posBuyDate" type="date" style="width:100%;"></div>
+      <div id="posExitFields" style="display:none;">
+        <label>Exit Price ($)</label><input id="posExitPrice" type="number" step="0.01" style="width:100%;">
+        <label style="margin-top:8px;">Exit Date</label><input id="posExitDate" type="date" style="width:100%;">
+      </div>
+      <button id="posSaveBtn" onclick="savePosition()">Save Position</button>
+    </div>
+  </div>
+</div>
+
 <script>
 let SP500 = [];
 const CACHE_KEY = 'buffettScan_v1_4_18';
 const WATCH_KEY = 'buffettWatchlist_v1_4_1';
 const TICKER_KEY = 'sp500Tickers_v1_4_1';
+const POSITIONS_KEY = 'buffettPositions_v1';
 const TERMINAL_GROWTH_PCT = 2.5; // Hardcoded terminal growth rate for DCF (was a user input; locked -- real-world variance here is negligible)
 let watchlist = JSON.parse(localStorage.getItem(WATCH_KEY) || '[]');
+let positions = JSON.parse(localStorage.getItem(POSITIONS_KEY) || '[]');
+let positionPrices = {}; // ticker -> latest fetched price, independent of the qualifying-stock scan
+let positionModalMode = 'add', positionModalId = null;
+const todayISO = () => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
 const statusEl = document.getElementById('status');
 const scanBtn = document.getElementById('scanBtn');
 const forceScanBtn = document.getElementById('forceScanBtn');
@@ -148,6 +200,11 @@ const notifyBtn = document.getElementById('notifyBtn');
 const exportBtn = document.getElementById('exportBtn');
 const aiAnalysisBtn = document.getElementById('aiAnalysisBtn');
 const resultsBody = document.getElementById('resultsBody');
+const positionsBody = document.getElementById('positionsBody');
+const closedPositionsBody = document.getElementById('closedPositionsBody');
+const portfolioSummary = document.getElementById('portfolioSummary');
+const addPositionBtn = document.getElementById('addPositionBtn');
+const refreshPositionsBtn = document.getElementById('refreshPositionsBtn');
 let priceChart = null, rsiChart = null, macdChart = null;
 let lastResults = [];
 
@@ -284,6 +341,108 @@ function toggleWatch(t) {
   let c=JSON.parse(localStorage.getItem(CACHE_KEY))?.data; if(c)renderResults(c);
 }
 window.toggleWatch=toggleWatch;
+
+function openPositionModal(mode, id=null) {
+  positionModalMode = mode; positionModalId = id;
+  const title=document.getElementById('positionModalTitle'), tickerInput=document.getElementById('posTicker');
+  const buyFields=document.getElementById('posBuyFields'), sharesField=document.getElementById('posSharesField'), buyDateField=document.getElementById('posBuyDateField');
+  const exitFields=document.getElementById('posExitFields'), saveBtn=document.getElementById('posSaveBtn');
+  if (mode === 'add') {
+    title.textContent='Enter Position'; tickerInput.value=''; tickerInput.disabled=false;
+    document.getElementById('posBuyPrice').value=''; document.getElementById('posShares').value='';
+    document.getElementById('posBuyDate').value=todayISO();
+    buyFields.style.display=''; sharesField.style.display=''; buyDateField.style.display=''; exitFields.style.display='none';
+    saveBtn.textContent='Save Position';
+  } else {
+    const pos=positions.find(p=>p.id===id);
+    title.textContent=`Close ${pos.ticker}`; tickerInput.value=pos.ticker; tickerInput.disabled=true;
+    buyFields.style.display='none'; sharesField.style.display='none'; buyDateField.style.display='none'; exitFields.style.display='';
+    document.getElementById('posExitPrice').value=positionPrices[pos.ticker]!=null?positionPrices[pos.ticker]:'';
+    document.getElementById('posExitDate').value=todayISO();
+    saveBtn.textContent='Close Position';
+  }
+  document.getElementById('positionModal').style.display='block';
+}
+window.openPositionModal=openPositionModal;
+
+function closePositionModal() { document.getElementById('positionModal').style.display='none'; }
+window.closePositionModal=closePositionModal;
+
+function savePosition() {
+  if (positionModalMode === 'add') {
+    const ticker=document.getElementById('posTicker').value.trim().toUpperCase();
+    const buyPrice=parseFloat(document.getElementById('posBuyPrice').value);
+    const shares=parseInt(document.getElementById('posShares').value,10);
+    const buyDate=document.getElementById('posBuyDate').value;
+    if (!ticker || !(buyPrice>0) || !(shares>0) || !buyDate) { alert('Enter a ticker, buy price, shares, and buy date.'); return; }
+    positions.push({id:Date.now(),ticker,buyPrice,shares,buyDate,status:'open',exitPrice:null,exitDate:null});
+    localStorage.setItem(POSITIONS_KEY,JSON.stringify(positions));
+    closePositionModal();
+    refreshPositionPrices();
+  } else {
+    const exitPrice=parseFloat(document.getElementById('posExitPrice').value);
+    const exitDate=document.getElementById('posExitDate').value;
+    if (!(exitPrice>0) || !exitDate) { alert('Enter an exit price and exit date.'); return; }
+    const pos=positions.find(p=>p.id===positionModalId);
+    pos.status='closed'; pos.exitPrice=exitPrice; pos.exitDate=exitDate;
+    localStorage.setItem(POSITIONS_KEY,JSON.stringify(positions));
+    closePositionModal();
+    renderPositions();
+  }
+}
+window.savePosition=savePosition;
+
+function deletePosition(id) {
+  if (!confirm('Delete this position? This cannot be undone.')) return;
+  positions = positions.filter(p=>p.id!==id);
+  localStorage.setItem(POSITIONS_KEY,JSON.stringify(positions));
+  renderPositions();
+}
+window.deletePosition=deletePosition;
+
+async function refreshPositionPrices() {
+  const openTickers=[...new Set(positions.filter(p=>p.status==='open').map(p=>p.ticker))];
+  await Promise.all(openTickers.map(async t=>{
+    try { const d=await fetchYahooData(t); positionPrices[t]=d.price; }
+    catch(e) { console.error(t,e); positionPrices[t]=null; }
+  }));
+  renderPositions();
+}
+window.refreshPositionPrices=refreshPositionPrices;
+
+function renderPositions() {
+  const open=positions.filter(p=>p.status==='open'), closed=positions.filter(p=>p.status==='closed');
+  positionsBody.innerHTML = open.length ? open.map(p=>{
+    const cur=positionPrices[p.ticker];
+    const pnl=(cur!=null)?(cur-p.buyPrice)*p.shares:null;
+    const pnlPct=(cur!=null)?((cur-p.buyPrice)/p.buyPrice)*100:null;
+    const cls=pnl==null?'':pnl>=0?'score-high':'score-low';
+    return `<tr><td>${p.ticker}</td><td>$${p.buyPrice.toFixed(2)}</td><td>${p.shares}</td><td>${p.buyDate}</td>
+      <td>${cur!=null?'$'+cur.toFixed(2):'—'}</td>
+      <td class="${cls}">${pnl!=null?(pnl>=0?'+':'')+'$'+pnl.toFixed(2):'—'}</td>
+      <td class="${cls}">${pnlPct!=null?(pnlPct>=0?'+':'')+pnlPct.toFixed(1)+'%':'—'}</td>
+      <td><button class="secondary" onclick="openPositionModal('close',${p.id})">Close</button> <button class="watch watching" onclick="deletePosition(${p.id})">Delete</button></td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="8" style="color:#64748b;">No open positions tracked yet.</td></tr>`;
+
+  closedPositionsBody.innerHTML = closed.length ? closed.map(p=>{
+    const pnl=(p.exitPrice-p.buyPrice)*p.shares, pnlPct=((p.exitPrice-p.buyPrice)/p.buyPrice)*100, cls=pnl>=0?'score-high':'score-low';
+    return `<tr><td>${p.ticker}</td><td>$${p.buyPrice.toFixed(2)}</td><td>${p.shares}</td><td>${p.buyDate}</td>
+      <td>$${p.exitPrice.toFixed(2)}</td><td>${p.exitDate}</td>
+      <td class="${cls}">${pnl>=0?'+':''}$${pnl.toFixed(2)}</td>
+      <td class="${cls}">${pnlPct>=0?'+':''}${pnlPct.toFixed(1)}%</td>
+      <td><button class="watch watching" onclick="deletePosition(${p.id})">Delete</button></td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="9" style="color:#64748b;">No closed positions yet.</td></tr>`;
+
+  const investedOpen=open.reduce((s,p)=>s+p.buyPrice*p.shares,0);
+  const valueOpen=open.reduce((s,p)=>{const cur=positionPrices[p.ticker]; return s+(cur!=null?cur*p.shares:p.buyPrice*p.shares)},0);
+  const unrealized=valueOpen-investedOpen;
+  const realized=closed.reduce((s,p)=>s+(p.exitPrice-p.buyPrice)*p.shares,0);
+  const total=unrealized+realized;
+  portfolioSummary.innerHTML = `Open positions value: <strong style="color:#f8fafc;">$${valueOpen.toFixed(2)}</strong> (unrealized ${unrealized>=0?'+':''}$${unrealized.toFixed(2)}) &nbsp;|&nbsp; Realized P&amp;L: <strong style="color:#f8fafc;">${realized>=0?'+':''}$${realized.toFixed(2)}</strong> &nbsp;|&nbsp; Total portfolio P&amp;L: <strong class="${total>=0?'score-high':'score-low'}">${total>=0?'+':''}$${total.toFixed(2)}</strong>`;
+}
+window.renderPositions=renderPositions;
 
 function toggleInfo(e, id) {
   e.stopPropagation();
@@ -486,8 +645,12 @@ forceScanBtn.addEventListener('click',()=>scanStocks(true));
 notifyBtn.addEventListener('click',enableNotifications);
 exportBtn.addEventListener('click',exportCSV);
 aiAnalysisBtn.addEventListener('click',fetchAIAnalysis);
-window.onclick = (e) => { if (e.target == document.getElementById('chartModal')) closeChart(); }
+addPositionBtn.addEventListener('click',()=>openPositionModal('add'));
+refreshPositionsBtn.addEventListener('click',refreshPositionPrices);
+window.onclick = (e) => { if (e.target == document.getElementById('chartModal')) closeChart(); if (e.target == document.getElementById('positionModal')) closePositionModal(); }
 loadSP500Tickers().then(()=>{let c=loadCache();if(c)renderResults(c)});
+renderPositions();
+refreshPositionPrices();
 </script>
 </body>
 </html>
