@@ -143,6 +143,9 @@
   <div style="font-size:11px; color:#c9a227; border:1px solid #c9a227; border-radius:6px; padding:8px 10px; margin-bottom:10px;">
     These results are proprietary to Blue Chip Swing Trader&trade; and licensed to the individual User according to the Terms of Service. This content may not be copied, distributed, or shared with anyone other than the individual User.
   </div>
+  <div id="aiCacheNote" style="font-size:11px; color:#94a3b8; margin-bottom:10px; display:none;">
+    Today's analysis — refreshed once daily and shared across users on default settings.
+  </div>
   <div id="aiOutput" style="white-space:pre-wrap; font-size:13px; line-height:1.6;"></div>
 </div>
 <div style="font-size:11px; font-style:italic; color:#64748b; margin-top:8px; margin-bottom:16px;">
@@ -650,6 +653,7 @@ async function fetchAIAnalysis() {
   aiAnalysisBtn.disabled = true; aiAnalysisBtn.textContent = 'Generating...';
   document.getElementById('aiPanel').style.display = 'block';
   document.getElementById('aiOutput').textContent = 'Contacting Claude...';
+  document.getElementById('aiCacheNote').style.display = 'none';
   try {
     const prompt = buildAIPrompt(lastResults);
     const cacheKey = isDefaultAISettings() ? 'ai-analysis-' + new Date().toISOString().slice(0,10) : null;
@@ -665,6 +669,7 @@ async function fetchAIAnalysis() {
     const text = textBlock?.text;
     if (!text) throw new Error('No content returned from Claude');
     if (data.stop_reason === 'max_tokens') console.warn('AI Analysis response was truncated (max_tokens reached)');
+    document.getElementById('aiCacheNote').style.display = data._servedFromCache ? 'block' : 'none';
     document.getElementById('aiOutput').textContent = text;
   } catch (e) {
     console.error('AI analysis error', e);

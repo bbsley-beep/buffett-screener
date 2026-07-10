@@ -24,7 +24,7 @@ export default async (req) => {
     if (store) {
       const cached = await store.get(cacheKey, { type: "json" });
       if (cached) {
-        return new Response(JSON.stringify(cached), {
+        return new Response(JSON.stringify({ ...cached, _servedFromCache: true }), {
           status: 200,
           headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
         });
@@ -51,7 +51,7 @@ export default async (req) => {
       await store.setJSON(cacheKey, data);
     }
 
-    return new Response(JSON.stringify(data), {
+    return new Response(JSON.stringify({ ...data, _servedFromCache: false }), {
       status: 200,
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
     });
