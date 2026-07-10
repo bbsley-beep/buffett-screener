@@ -505,17 +505,27 @@ function shuffleArray(arr) {
   return a;
 }
 
-function buildSelectWinnerTool(tickers) {
+// isFinal=true (the championship round, after both elimination rounds) asks for a
+// noticeably fuller justification than a round-1 group matchup -- more decisions have
+// already been eliminated to reach this point, so the winning case deserves more depth.
+function buildSelectWinnerTool(tickers, isFinal) {
   return {
     name: 'select_winner',
     strict: true,
-    description: 'Select the single winning stock among the candidates presented in this matchup for a 3-15 day swing-trade entry.',
+    description: isFinal
+      ? 'Select the single overall winning stock after weighing the three group winners from round 1.'
+      : 'Select the single winning stock among the candidates presented in this matchup for a 3-15 day swing-trade entry.',
     input_schema: {
       type: 'object',
       properties: {
         winner: { type: 'string', enum: tickers, description: 'Ticker of the winning candidate.' },
         confidence: { type: 'integer', description: 'Confidence in this pick, 0 (coin flip) to 100 (certain).' },
-        reasoning: { type: 'string', description: '2-4 sentences citing the specific technical/fundamental factors and chart pattern that justified the pick.' }
+        reasoning: {
+          type: 'string',
+          description: isFinal
+            ? '4-6 sentences giving a thorough final justification: the specific technical/fundamental factors and chart pattern behind the pick, AND why it beat the other two round-1 group winners specifically.'
+            : '2-3 sentences citing the specific technical/fundamental factors and chart pattern that justified the pick.'
+        }
       },
       required: ['winner', 'confidence', 'reasoning'],
       additionalProperties: false
@@ -566,8 +576,11 @@ function bracketCandidateLine(x) {
 async function runMatchup(candidates, imageByTicker, priorWinners) {
   const shuffled = shuffleArray(candidates);
   const tickers = shuffled.map(c => c.ticker);
+  const isFinal = !!priorWinners;
   const content = [
-    { type: 'text', text: `You are comparing ${tickers.length} stocks for a 3-15 day swing-trade entry. For each, you're given its price chart (with Bollinger Bands and 20-day SMA) plus its exact computed technical/fundamental data. Weigh where each stock sits in its trend cycle (fresh reversal vs. already-extended vs. no clear trend), not just whether an indicator crosses a threshold. This is not financial advice. Call select_winner with the single best candidate.` }
+    { type: 'text', text: isFinal
+      ? `You are selecting the single best stock for a 3-15 day swing-trade entry from the ${tickers.length} winners of round 1 -- each already beat two other stocks to get here. For each, you're given its price chart, its exact computed technical/fundamental data, and its round-1 reasoning. Weigh where each stock sits in its trend cycle, not just whether an indicator crosses a threshold. This is the final round -- give a thorough justification for your pick after both elimination rounds. This is not financial advice. Call select_winner with the single best candidate.`
+      : `You are comparing ${tickers.length} stocks for a 3-15 day swing-trade entry. For each, you're given its price chart (with Bollinger Bands and 20-day SMA) plus its exact computed technical/fundamental data. Weigh where each stock sits in its trend cycle (fresh reversal vs. already-extended vs. no clear trend), not just whether an indicator crosses a threshold. This is not financial advice. Call select_winner with the single best candidate.` }
   ];
   shuffled.forEach(x => {
     let line = bracketCandidateLine(x);
@@ -582,7 +595,7 @@ async function runMatchup(candidates, imageByTicker, priorWinners) {
     model: 'claude-sonnet-5',
     max_tokens: 1024,
     output_config: { effort: 'low' },
-    tools: [buildSelectWinnerTool(tickers)],
+    tools: [buildSelectWinnerTool(tickers, isFinal)],
     tool_choice: { type: 'tool', name: 'select_winner' },
     messages: [{ role: 'user', content }]
   };
