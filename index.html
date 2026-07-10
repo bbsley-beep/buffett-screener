@@ -634,6 +634,17 @@ ${buyRows}
 For each of the ${top10.length} candidates above, write 1 concise sentence explaining why it's a good buy/hold candidate right now for a 3-15 day swing window, referencing its Quality score, EPS growth, RSI, Tech score, MACD state, SMA trend, relative volume, BB position, and DCF margin of safety. Do not suggest short-selling or put-buying; this is a long-only screen. This is not financial advice -- say so explicitly once. Be concise -- keep the entire response under about 600 words.`;
 }
 
+// True only when the user hasn't touched the DCF/risk inputs from their defaults -- in that
+// case every user's top-10 candidate list is identical for the day, so the backend can safely
+// serve a shared cached result instead of a fresh Anthropic call. Anyone with customized inputs
+// always gets a live call, since their list can genuinely differ.
+function isDefaultAISettings() {
+  return parseFloat(document.getElementById('growthRate').value) === 8
+    && parseFloat(document.getElementById('discountRate').value) === 10
+    && parseFloat(document.getElementById('riskPct').value) === 1
+    && parseFloat(document.getElementById('stopPct').value) === 3;
+}
+
 async function fetchAIAnalysis() {
   if (lastResults.length === 0) { alert('No results to analyze. Run a scan first.'); return; }
   aiAnalysisBtn.disabled = true; aiAnalysisBtn.textContent = 'Generating...';
@@ -641,10 +652,11 @@ async function fetchAIAnalysis() {
   document.getElementById('aiOutput').textContent = 'Contacting Claude...';
   try {
     const prompt = buildAIPrompt(lastResults);
+    const cacheKey = isDefaultAISettings() ? 'ai-analysis-' + new Date().toISOString().slice(0,10) : null;
     const res = await fetch('/.netlify/functions/claude', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({ messages: [{ role: 'user', content: prompt }], cacheKey })
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
