@@ -662,8 +662,8 @@ async function fetchAIAnalysis() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages: [{ role: 'user', content: prompt }], cacheKey })
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(data?.detail || data?.error?.message || data?.error || `HTTP ${res.status}`);
     if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
     const textBlock = data.content?.find(c => c.type === 'text');
     const text = textBlock?.text;
