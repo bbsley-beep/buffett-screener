@@ -101,13 +101,15 @@
 </div>
 
 <div class="panel">
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
     <div style="font-weight:600; color:#f8fafc;">My Positions</div>
     <div>
       <button id="refreshPositionsBtn" class="secondary">Refresh Prices</button>
+      <button id="exportPositionsBtn" class="secondary">Export Positions CSV</button>
       <button id="addPositionBtn">+ Enter Position</button>
     </div>
   </div>
+  <div class="sub" style="margin-bottom:12px;">Positions are stored in this browser only. Export to CSV weekly to keep your own permanent record.</div>
   <div class="sub" style="margin-bottom:8px;">Open Positions</div>
   <div class="table-wrap" style="max-height:300px;">
     <table id="positionsTable">
@@ -205,6 +207,7 @@ const closedPositionsBody = document.getElementById('closedPositionsBody');
 const portfolioSummary = document.getElementById('portfolioSummary');
 const addPositionBtn = document.getElementById('addPositionBtn');
 const refreshPositionsBtn = document.getElementById('refreshPositionsBtn');
+const exportPositionsBtn = document.getElementById('exportPositionsBtn');
 let priceChart = null, rsiChart = null, macdChart = null;
 let lastResults = [];
 
@@ -444,6 +447,26 @@ function renderPositions() {
 }
 window.renderPositions=renderPositions;
 
+function exportPositionsCSV() {
+  if (positions.length === 0) { alert('No positions to export. Enter a position first.'); return; }
+  let csv = `Blue Chip Swing Trader (TM) - Portfolio Export - ${todayISO()}\n`;
+  csv += 'Status,Ticker,Buy Price,Shares,Buy Date,Current/Exit Price,Exit Date,P&L $,P&L %\n';
+  positions.forEach(p => {
+    const isOpen = p.status === 'open';
+    const refPrice = isOpen ? positionPrices[p.ticker] : p.exitPrice;
+    const pnl = (refPrice!=null) ? (refPrice-p.buyPrice)*p.shares : null;
+    const pnlPct = (refPrice!=null) ? ((refPrice-p.buyPrice)/p.buyPrice)*100 : null;
+    csv += `${isOpen?'Open':'Closed'},${p.ticker},${p.buyPrice.toFixed(2)},${p.shares},${p.buyDate},${refPrice!=null?refPrice.toFixed(2):''},${p.exitDate||''},${pnl!=null?pnl.toFixed(2):''},${pnlPct!=null?pnlPct.toFixed(1):''}\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `bluechip-positions-${todayISO()}.csv`;
+  a.click();
+}
+window.exportPositionsCSV=exportPositionsCSV;
+
 function toggleInfo(e, id) {
   e.stopPropagation();
   document.querySelectorAll('.info-popover.open').forEach(p => { if (p.id !== id) p.classList.remove('open'); });
@@ -647,6 +670,7 @@ exportBtn.addEventListener('click',exportCSV);
 aiAnalysisBtn.addEventListener('click',fetchAIAnalysis);
 addPositionBtn.addEventListener('click',()=>openPositionModal('add'));
 refreshPositionsBtn.addEventListener('click',refreshPositionPrices);
+exportPositionsBtn.addEventListener('click',exportPositionsCSV);
 window.onclick = (e) => { if (e.target == document.getElementById('chartModal')) closeChart(); if (e.target == document.getElementById('positionModal')) closePositionModal(); }
 loadSP500Tickers().then(()=>{let c=loadCache();if(c)renderResults(c)});
 renderPositions();
