@@ -616,25 +616,26 @@ function exportCSV() {
 }
 
 function buildAIPrompt(results) {
-  // Capped at 10 candidates for timeout margin (Netlify's ~29s synchronous function ceiling,
-  // platform-level, not configurable). No separate "avoid list" section -- RSI>70 SELL flags
+  // Capped at 9 candidates (divides evenly into 3 groups of 3 for the planned AI bracket
+  // feature -- see memory) and for timeout margin (Netlify's ~29s synchronous function
+  // ceiling, platform-level, not configurable). No separate "avoid list" section -- RSI>70 SELL flags
   // are already deterministic (see getSignal) and visually flagged in the main results table,
   // so spending AI output tokens re-explaining them added no analytical value. That freed
   // budget goes toward discussing all 10 candidates as buy recommendations instead of
   // narrowing to ~5, at a correspondingly higher word cap.
   // Proper fix (background function + polling, no realistic time ceiling) is deferred to the
   // dedicated AI Analysis architecture session, alongside the shared-daily-cache idea.
-  const top10 = results.filter(x => x.rsi < 50).sort((a,b) => b.hybrid - a.hybrid).slice(0, 10);
+  const top9 = results.filter(x => x.rsi < 50).sort((a,b) => b.hybrid - a.hybrid).slice(0, 9);
 
-  let buyRows = top10.map(x =>
+  let buyRows = top9.map(x =>
     `${x.ticker} | Quality:${x.bScore} | EPS Growth 5yr:${x.earningsGrowth5yr!=null?x.earningsGrowth5yr.toFixed(1)+'%':'N/A'} | RSI:${x.rsi?.toFixed(1)||'N/A'} | Tech:${x.tScore} | MACD:${x.macdState} | SMA20 Trend:${x.smaTrendPct!=null?(x.smaTrendPct>=0?'+':'')+x.smaTrendPct.toFixed(1)+'%':'N/A'} | Rel Volume:${x.volRatio!=null?x.volRatio.toFixed(2)+'x':'N/A'} | BB Position:${x.bbPositionPct!=null?x.bbPositionPct.toFixed(0)+'%':'N/A'} | Hybrid:${x.hybrid.toFixed(1)} | Price:$${x.price.toFixed(2)} | Stop:$${x.stop.toFixed(2)} | Target:$${x.target.toFixed(2)} | DCF MOS:${x.mos.toFixed(1)}% | Signal:${x.signal}`
   ).join('\n');
 
-  return `You are analyzing a stock screener's output for a 3-15 day swing-trading strategy. Below are the top ${top10.length} S&P 500 candidates that passed a quality fundamental filter (score >= 40), ranked by a technical timing (Hybrid) score, with MACD crossover state and raw technical detail (SMA20 trend, relative volume, Bollinger Band position).
+  return `You are analyzing a stock screener's output for a 3-15 day swing-trading strategy. Below are the top ${top9.length} S&P 500 candidates that passed a quality fundamental filter (score >= 40), ranked by a technical timing (Hybrid) score, with MACD crossover state and raw technical detail (SMA20 trend, relative volume, Bollinger Band position).
 
 ${buyRows}
 
-For each of the ${top10.length} candidates above, write 1 concise sentence explaining why it's a good buy/hold candidate right now for a 3-15 day swing window, referencing its Quality score, EPS growth, RSI, Tech score, MACD state, SMA trend, relative volume, BB position, and DCF margin of safety. Do not suggest short-selling or put-buying; this is a long-only screen. This is not financial advice -- say so explicitly once. Be concise -- keep the entire response under about 600 words.`;
+For each of the ${top9.length} candidates above, write 1 concise sentence explaining why it's a good buy/hold candidate right now for a 3-15 day swing window, referencing its Quality score, EPS growth, RSI, Tech score, MACD state, SMA trend, relative volume, BB position, and DCF margin of safety. Do not suggest short-selling or put-buying; this is a long-only screen. This is not financial advice -- say so explicitly once. Be concise -- keep the entire response under about 600 words.`;
 }
 
 // True only when the user hasn't touched the DCF/risk inputs from their defaults -- in that
@@ -656,7 +657,7 @@ async function fetchAIAnalysis() {
   document.getElementById('aiCacheNote').style.display = 'none';
   try {
     const prompt = buildAIPrompt(lastResults);
-    const cacheKey = isDefaultAISettings() ? 'ai-analysis-' + new Date().toISOString().slice(0,10) : null;
+    const cacheKey = isDefaultAISettings() ? 'ai-analysis-v2-' + new Date().toISOString().slice(0,10) : null;
     const res = await fetch('/.netlify/functions/claude', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
