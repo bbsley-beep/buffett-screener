@@ -81,7 +81,6 @@
 <div class="panel">
   <button id="scanBtn">Scan S&P 500</button>
   <button id="forceScanBtn" class="secondary" title="Re-fetches fresh data from Yahoo for every ticker and recalculates with your current input values. 'Scan S&P 500' reuses today's cached results (including whichever inputs were in effect when that cache was built) if a same-day cache exists.">Force Rescan</button>
-  <button id="backtestBtn" class="secondary">Backtest 90 Days</button>
   <button id="notifyBtn" class="secondary">Enable Alerts</button>
   <button id="exportBtn" class="secondary">Export CSV</button>
   <button id="aiAnalysisBtn" class="secondary">AI Analysis</button>
@@ -145,7 +144,6 @@ let watchlist = JSON.parse(localStorage.getItem(WATCH_KEY) || '[]');
 const statusEl = document.getElementById('status');
 const scanBtn = document.getElementById('scanBtn');
 const forceScanBtn = document.getElementById('forceScanBtn');
-const backtestBtn = document.getElementById('backtestBtn');
 const notifyBtn = document.getElementById('notifyBtn');
 const exportBtn = document.getElementById('exportBtn');
 const aiAnalysisBtn = document.getElementById('aiAnalysisBtn');
@@ -227,9 +225,9 @@ function saveCache(d) {
 }
 
 async function scanStocks(force=false) {
-  scanBtn.disabled=true; backtestBtn.disabled=true; forceScanBtn.disabled=true; exportBtn.disabled=true; resultsBody.innerHTML='';
+  scanBtn.disabled=true; forceScanBtn.disabled=true; exportBtn.disabled=true; resultsBody.innerHTML='';
   if (SP500.length === 0) await loadSP500Tickers();
-  if (!force) { let c = loadCache(); if (c) { renderResults(c); scanBtn.disabled=false; backtestBtn.disabled=false; forceScanBtn.disabled=false; exportBtn.disabled=false; return; } }
+  if (!force) { let c = loadCache(); if (c) { renderResults(c); scanBtn.disabled=false; forceScanBtn.disabled=false; exportBtn.disabled=false; return; } }
   const g=parseFloat(document.getElementById('growthRate').value),r=parseFloat(document.getElementById('discountRate').value),stopPct=parseFloat(document.getElementById('stopPct').value),res=[];
   for (let i=0;i<SP500.length;i++) {
     let t=SP500[i]; statusEl.textContent=`Scanning ${i+1}/${SP500.length}: ${t}`;
@@ -257,7 +255,7 @@ async function scanStocks(force=false) {
     } catch(e){console.error(t,e);}
   }
   res.sort((a,b)=>b.hybrid-a.hybrid); saveCache(res); renderResults(res);
-  scanBtn.disabled=false; backtestBtn.disabled=false; forceScanBtn.disabled=false; exportBtn.disabled=false;
+  scanBtn.disabled=false; forceScanBtn.disabled=false; exportBtn.disabled=false;
 }
 
 function renderResults(r) {
@@ -480,11 +478,8 @@ function sortTable(col) {
 }
 window.sortTable = sortTable;
 
-function runBacktest(){statusEl.textContent='Backtesting last 90 days...';setTimeout(()=>{statusEl.textContent='Backtest: Avg Win Rate 61%, Avg Return +5.1%, Avg Hold 9 days. Implement with real historical data.'},1500)}
-
 scanBtn.addEventListener('click',()=>scanStocks(false));
 forceScanBtn.addEventListener('click',()=>scanStocks(true));
-backtestBtn.addEventListener('click',runBacktest);
 notifyBtn.addEventListener('click',enableNotifications);
 exportBtn.addEventListener('click',exportCSV);
 aiAnalysisBtn.addEventListener('click',fetchAIAnalysis);
