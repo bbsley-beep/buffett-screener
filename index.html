@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blue Chip Swing Trader v1.4.15</title>
+<title>Blue Chip Swing Trader v1.4.18</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.0/dist/chartjs-chart-financial.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/luxon@3.4/build/global/luxon.min.js"></script>
@@ -136,7 +136,7 @@
 
 <script>
 let SP500 = [];
-const CACHE_KEY = 'buffettScan_v1_4_15';
+const CACHE_KEY = 'buffettScan_v1_4_18';
 const WATCH_KEY = 'buffettWatchlist_v1_4_1';
 const TICKER_KEY = 'sp500Tickers_v1_4_1';
 const TERMINAL_GROWTH_PCT = 2.5; // Hardcoded terminal growth rate for DCF (was a user input; locked -- real-world variance here is negligible)
@@ -180,10 +180,11 @@ const scoreBuffett=(s,m)=>{
 };
 
 const scoreRSI=r=>r===null?0:r<30?100:r<40?70:r<60?50:r<70?30:0;
-// MACD criterion: histogram (MACD-signal) > 0 = bullish crossover state, not raw MACD>0 (which just duplicates the price>SMA trend check above)
+// MACD criterion: histogram > 0 (confirmed bullish crossover) OR histogram rising vs. the prior day (early momentum inflection,
+// e.g. an oversold stock decelerating before a bounce -- catches the setup before the lagging zero-cross confirmation).
 // BB criterion: lower-half band position OR a volatility squeeze (narrow band relative to its own recent average) -- short-term swing setups
 // want room to run (lower half) or an imminent breakout (squeeze), not strictly "hugging the lower band" as the old threshold required.
-const scoreTech=(p,s,v,a,m,bbPos,isSqueeze)=>{let c=0,mh=m.hist[m.hist.length-1];if(p>s)c+=25;if(v>1.5*a)c+=25;if((bbPos!=null&&bbPos<50)||isSqueeze)c+=25;if(mh!==null&&mh>0)c+=25;return c};
+const scoreTech=(p,s,v,a,m,bbPos,isSqueeze)=>{let c=0,mh=m.hist[m.hist.length-1],mhPrev=m.hist[m.hist.length-2];if(p>s)c+=25;if(v>1.5*a)c+=25;if((bbPos!=null&&bbPos<50)||isSqueeze)c+=25;if((mh!=null&&mh>0)||(mh!=null&&mhPrev!=null&&mh>mhPrev))c+=25;return c};
 const getSignal=(r,p,s,t)=>r>70?'SELL':p<=s?'STOP':p>=t?'TARGET':r<30?'BUY':'HOLD';
 
 async function loadSP500Tickers() {
@@ -245,7 +246,9 @@ async function scanStocks(force=false) {
       let bbWidth=calcBBWidth(bb),widthLast=bbWidth[bbWidth.length-1],validWidths=bbWidth.filter(w=>w!=null),avgWidth=validWidths.length?validWidths.reduce((x,y)=>x+y,0)/validWidths.length:null;
       let isSqueeze=(widthLast!=null&&avgWidth!=null)?widthLast<avgWidth*0.75:false;
       let bS=scoreBuffett(d,mos),rS=scoreRSI(rsi),tS=scoreTech(d.price,sma[sma.length-1],d.volumes[d.volumes.length-1],av,macd,bbPositionPct,isSqueeze);
-      let macdLast=macd.hist[macd.hist.length-1],macdState=macdLast===null?'N/A':macdLast>0?'Bull':'Bear';
+      let macdLast=macd.hist[macd.hist.length-1],macdPrev=macd.hist[macd.hist.length-2];
+      let macdRising=(macdLast!=null&&macdPrev!=null&&macdLast>macdPrev);
+      let macdState=macdLast===null?'N/A':(macdLast>0?'Bull':'Bear')+(macdRising?' ↑':'');
       let rF=tS>=50?rS:0,hy=0.2*bS+0.3*rF+0.5*tS;
       if (bS>=40) { // Lowered from 60 to 40
         let st=d.price*(1-stopPct/100),tg=d.price+1.5*(atr||d.price*0.02),sg=getSignal(rsi,d.price,st,tg);
@@ -268,7 +271,7 @@ function renderResults(r) {
     x.shares = sh;
     tr.innerHTML=`<td><span class="ticker-link" onclick="showChart('${x.ticker}')"><strong>${x.ticker}</strong></span></td><td><span class="badge ${bc}">${x.signal}</span></td>
     <td><button class="watch ${w?'watching':''}" onclick="toggleWatch('${x.ticker}')">${w?'Unwatch':'Watch'}</button></td>
-    <td>${x.bScore}</td><td>${x.rsi?.toFixed(1)||'N/A'}</td><td>${x.tScore}</td><td class="${x.macdState==='Bull'?'score-high':x.macdState==='Bear'?'score-low':''}">${x.macdState}</td><td class="${hc}">${x.hybrid.toFixed(1)}</td>
+    <td>${x.bScore}</td><td>${x.rsi?.toFixed(1)||'N/A'}</td><td>${x.tScore}</td><td class="${x.macdState.startsWith('Bull')?'score-high':x.macdState.startsWith('Bear')?'score-low':''}">${x.macdState}</td><td class="${hc}">${x.hybrid.toFixed(1)}</td>
     <td>$${x.price.toFixed(2)}</td><td>$${x.stop.toFixed(2)}</td><td>$${x.target.toFixed(2)}</td>
     <td>${sh>0?sh:'-'}</td><td>${x.mos.toFixed(1)}%</td>`; resultsBody.appendChild(tr);
   });
