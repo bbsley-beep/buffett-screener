@@ -327,7 +327,7 @@ async function scanStocks(force=false) {
       }
     } catch(e){console.error(t,e);}
   }
-  res.sort((a,b)=>b.hybrid-a.hybrid); saveCache(res); renderResults(res);
+  res.sort((a,b)=>b.hybrid-a.hybrid); saveCache(res); renderResults(res); saveDailySnapshotIfNeeded(res);
   scanBtn.disabled=false; forceScanBtn.disabled=false; exportBtn.disabled=false;
 }
 
@@ -615,17 +615,23 @@ function exportCSV() {
   a.click();
 }
 
+// Shared by buildAIPrompt and the daily snapshot logger, so both always agree on which 9
+// candidates are "the" list for a given day. Capped at 9 (divides evenly into 3 groups of 3
+// for the planned AI bracket feature -- see memory) and for AI Analysis timeout margin
+// (Netlify's ~29s synchronous function ceiling, platform-level, not configurable).
+function getTopCandidates(results) {
+  return results.filter(x => x.rsi < 50).sort((a,b) => b.hybrid - a.hybrid).slice(0, 9);
+}
+
 function buildAIPrompt(results) {
-  // Capped at 9 candidates (divides evenly into 3 groups of 3 for the planned AI bracket
-  // feature -- see memory) and for timeout margin (Netlify's ~29s synchronous function
-  // ceiling, platform-level, not configurable). No separate "avoid list" section -- RSI>70 SELL flags
-  // are already deterministic (see getSignal) and visually flagged in the main results table,
-  // so spending AI output tokens re-explaining them added no analytical value. That freed
-  // budget goes toward discussing all 10 candidates as buy recommendations instead of
-  // narrowing to ~5, at a correspondingly higher word cap.
+  // No separate "avoid list" section -- RSI>70 SELL flags are already deterministic (see
+  // getSignal) and visually flagged in the main results table, so spending AI output tokens
+  // re-explaining them added no analytical value. That freed budget goes toward discussing
+  // all 9 candidates as buy recommendations instead of narrowing to ~5, at a correspondingly
+  // higher word cap.
   // Proper fix (background function + polling, no realistic time ceiling) is deferred to the
   // dedicated AI Analysis architecture session, alongside the shared-daily-cache idea.
-  const top9 = results.filter(x => x.rsi < 50).sort((a,b) => b.hybrid - a.hybrid).slice(0, 9);
+  const top9 = getTopCandidates(results);
 
   let buyRows = top9.map(x =>
     `${x.ticker} | Quality:${x.bScore} | EPS Growth 5yr:${x.earningsGrowth5yr!=null?x.earningsGrowth5yr.toFixed(1)+'%':'N/A'} | RSI:${x.rsi?.toFixed(1)||'N/A'} | Tech:${x.tScore} | MACD:${x.macdState} | SMA20 Trend:${x.smaTrendPct!=null?(x.smaTrendPct>=0?'+':'')+x.smaTrendPct.toFixed(1)+'%':'N/A'} | Rel Volume:${x.volRatio!=null?x.volRatio.toFixed(2)+'x':'N/A'} | BB Position:${x.bbPositionPct!=null?x.bbPositionPct.toFixed(0)+'%':'N/A'} | Hybrid:${x.hybrid.toFixed(1)} | Price:$${x.price.toFixed(2)} | Stop:$${x.stop.toFixed(2)} | Target:$${x.target.toFixed(2)} | DCF MOS:${x.mos.toFixed(1)}% | Signal:${x.signal}`
@@ -647,6 +653,35 @@ function isDefaultAISettings() {
     && parseFloat(document.getElementById('discountRate').value) === 10
     && parseFloat(document.getElementById('riskPct').value) === 1
     && parseFloat(document.getElementById('stopPct').value) === 3;
+}
+
+// Forward-testing log: once per UTC day, records the deterministic top-9 candidates and
+// which one ranks #1, so future performance can be compared against actual subsequent price
+// history. Only fires on default DCF/risk settings -- same reasoning as the AI Analysis
+// shared cache -- so the daily record reflects one consistent, canonical scan rather than a
+// mix of different users' custom parameters. Silent on failure: this is background
+// record-keeping, not a user-facing feature, so it should never interrupt a scan.
+async function saveDailySnapshotIfNeeded(results) {
+  if (!isDefaultAISettings()) return;
+  const top9 = getTopCandidates(results);
+  if (top9.length === 0) return;
+  try {
+    await fetch('/.netlify/functions/save-snapshot', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        date: new Date().toISOString().slice(0, 10),
+        topPick: top9[0].ticker,
+        candidates: top9.map(x => ({
+          ticker: x.ticker, bScore: x.bScore, rsi: x.rsi, tScore: x.tScore,
+          macdState: x.macdState, hybrid: x.hybrid, price: x.price,
+          stop: x.stop, target: x.target, mos: x.mos
+        }))
+      })
+    });
+  } catch (e) {
+    console.warn('Daily snapshot save failed (non-critical)', e);
+  }
 }
 
 async function fetchAIAnalysis() {
