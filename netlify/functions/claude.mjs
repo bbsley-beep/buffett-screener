@@ -1,8 +1,17 @@
 import { getStore } from "@netlify/blobs";
+import { checkEntitlement } from "../lib/entitlement.mjs";
 
 export default async (req) => {
   if (req.method !== "POST") {
     return new Response("Method Not Allowed", { status: 405 });
+  }
+
+  const ent = await checkEntitlement(req);
+  if (!ent.ok) {
+    return new Response(JSON.stringify({ error: ent.error }), {
+      status: ent.status,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;

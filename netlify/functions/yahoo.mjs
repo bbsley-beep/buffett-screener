@@ -1,3 +1,5 @@
+import { checkEntitlement } from "../lib/entitlement.mjs";
+
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 const FETCH_TIMEOUT_MS = 8000;
 
@@ -36,8 +38,16 @@ async function getYahooAuth(forceRefresh) {
   return authCache;
 }
 
-exports.handler = async (event) => {
-  const { ticker } = event.queryStringParameters;
+export default async (req) => {
+  const ent = await checkEntitlement(req);
+  if (!ent.ok) {
+    return new Response(JSON.stringify({ error: ent.error }), {
+      status: ent.status,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const ticker = new URL(req.url).searchParams.get('ticker');
   const chartUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=6mo&interval=1d`;
 
   try {
@@ -62,29 +72,31 @@ exports.handler = async (event) => {
     const q = stats.quoteSummary.result[0];
     const quote = result.indicators.quote[0];
 
-    return {
-      statusCode: 200,
+    return new Response(JSON.stringify({
+      name: ticker,
+      price: result.meta.regularMarketPrice,
+      pe: q.summaryDetail?.trailingPE?.raw ?? null,
+      pb: q.defaultKeyStatistics?.priceToBook?.raw ?? null,
+      roe5yr: q.financialData?.returnOnEquity?.raw != null ? q.financialData.returnOnEquity.raw * 100 : null,
+      roic: q.financialData?.returnOnAssets?.raw != null ? q.financialData.returnOnAssets.raw * 100 : null,
+      debtToEquity: q.financialData?.debtToEquity?.raw != null ? q.financialData.debtToEquity.raw / 100 : null,
+      earningsGrowth5yr: q.financialData?.earningsGrowth?.raw != null ? q.financialData.earningsGrowth.raw * 100 : null,
+      fcf: q.financialData?.freeCashflow?.raw ?? null,
+      shares: q.defaultKeyStatistics?.sharesOutstanding?.raw ?? null,
+      netDebt: q.financialData?.totalDebt?.raw ?? null,
+      closes: quote.close,
+      highs: quote.high,
+      lows: quote.low,
+      volumes: quote.volume,
+      timestamps: result.timestamp
+    }), {
+      status: 200,
       headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: ticker,
-        price: result.meta.regularMarketPrice,
-        pe: q.summaryDetail?.trailingPE?.raw ?? null,
-        pb: q.defaultKeyStatistics?.priceToBook?.raw ?? null,
-        roe5yr: q.financialData?.returnOnEquity?.raw != null ? q.financialData.returnOnEquity.raw * 100 : null,
-        roic: q.financialData?.returnOnAssets?.raw != null ? q.financialData.returnOnAssets.raw * 100 : null,
-        debtToEquity: q.financialData?.debtToEquity?.raw != null ? q.financialData.debtToEquity.raw / 100 : null,
-        earningsGrowth5yr: q.financialData?.earningsGrowth?.raw != null ? q.financialData.earningsGrowth.raw * 100 : null,
-        fcf: q.financialData?.freeCashflow?.raw ?? null,
-        shares: q.defaultKeyStatistics?.sharesOutstanding?.raw ?? null,
-        netDebt: q.financialData?.totalDebt?.raw ?? null,
-        closes: quote.close,
-        highs: quote.high,
-        lows: quote.low,
-        volumes: quote.volume,
-        timestamps: result.timestamp
-      })
-    };
+    });
   } catch (e) {
-    return { statusCode: 500, body: JSON.stringify({ error: e.toString() }) };
+    return new Response(JSON.stringify({ error: e.toString() }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 };

@@ -9,6 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/luxon@3.4/build/global/luxon.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   body { font-family: -apple-system, sans-serif; margin: 0; background: #0a0e1a; color: #e2e8f0; }
 .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
@@ -64,7 +65,14 @@
 <div class="header-row">
   <h1><span style="color:#3b82f6;">Blue</span> <span style="color:#f8fafc;">Chip</span><span style="color:#22c55e;"> Swing Trader</span><sup style="font-size:0.5em;">™</sup></h1>
   <img src="logo.png" alt="Blue Chip Swing Trader logo" class="brand-logo">
+  <div id="accountMenu" style="display:flex; align-items:center; gap:10px; font-size:12px; color:#94a3b8;"></div>
 </div>
+
+<div id="gateScreen" class="panel" style="display:none;">
+  <div id="gateContent"></div>
+</div>
+
+<div id="appContent" style="display:none;">
 <div class="sub">Quality-fundamentals + RSI/BB/MACD timing screener for S&P 500. 3-15 day swing targets. Adjustable stop loss. Click ticker for chart.</div>
 
 <div class="panel">
@@ -175,6 +183,7 @@
   Using "AI Analysis" sends your current qualifying stock list (tickers and scores only, no personal data) to Anthropic's Claude API for analysis; see Anthropic's privacy policy for how that data is handled.
 </div>
 </div>
+</div>
 
 <div id="chartModal" class="modal">
   <div class="modal-content">
@@ -228,6 +237,19 @@
   </div>
 </div>
 
+<div id="signInModal" class="modal">
+  <div class="modal-content" style="max-width:400px;">
+    <span class="close" onclick="closeSignInModal()">&times;</span>
+    <div class="chart-title">Sign In</div>
+    <div style="font-size:12px; color:#94a3b8; margin:12px 0;">Enter your email and we'll send you a one-time sign-in link -- no password needed.</div>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div><label>Email</label><input id="signInEmailInput" type="email" placeholder="you@example.com" style="width:100%;"></div>
+      <button id="signInSendBtn" onclick="sendMagicLink()">Send Magic Link</button>
+      <div id="signInStatus" style="font-size:12px; color:#94a3b8;"></div>
+    </div>
+  </div>
+</div>
+
 <div id="bracketChartStage" style="position:absolute; left:-9999px; top:0;"></div>
 
 <script>
@@ -238,9 +260,16 @@ const TICKER_KEY = 'sp500Tickers_v1_4_1';
 const POSITIONS_KEY = 'buffettPositions_v1';
 const BYOK_KEY = 'bcstAnthropicKey_v1';
 const TERMINAL_GROWTH_PCT = 2.5; // Hardcoded terminal growth rate for DCF (was a user input; locked -- real-world variance here is negligible)
+// Supabase anon key is public-safe by design (meant to be exposed client-side) -- hardcoded
+// here rather than injected at build time since this app has no bundler/build step.
+// TODO: replace with the real project URL/anon key once the Supabase project is created.
+const SUPABASE_URL = 'https://YOUR-PROJECT-REF.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR-SUPABASE-ANON-KEY';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let watchlist = JSON.parse(localStorage.getItem(WATCH_KEY) || '[]');
 let positions = JSON.parse(localStorage.getItem(POSITIONS_KEY) || '[]');
 let byokKey = localStorage.getItem(BYOK_KEY) || null;
+let currentUser = null, currentSession = null, subscriptionInfo = null, appBootstrapped = false;
 let positionPrices = {}; // ticker -> latest fetched price, independent of the qualifying-stock scan
 let positionModalMode = 'add', positionModalId = null;
 const todayISO = () => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
@@ -261,6 +290,150 @@ const byokSettingsBtn = document.getElementById('byokSettingsBtn');
 const bracketBtn = document.getElementById('bracketBtn');
 let priceChart = null, rsiChart = null, macdChart = null;
 let lastResults = [];
+
+// ---- Auth & subscription gating ----
+// The entire app is gated behind sign-in + an active subscription (or trial). Entitlement
+// is re-checked server-side on every yahoo.mjs/claude.mjs call -- this client-side gate is
+// UX (hide the app, render sign-in/pricing) not the security boundary.
+
+function isEntitled() {
+  return subscriptionInfo?.effectiveTier === 'basic' || subscriptionInfo?.effectiveTier === 'premium';
+}
+function isPremiumEntitled() {
+  return subscriptionInfo?.effectiveTier === 'premium';
+}
+
+function renderAccountMenu() {
+  const el = document.getElementById('accountMenu');
+  if (!currentUser) {
+    el.innerHTML = '<button onclick="openSignInModal()">Sign In</button>';
+    return;
+  }
+  const sub = subscriptionInfo;
+  let tierLabel = 'No active subscription';
+  if (sub?.effectiveTier === 'premium') tierLabel = sub.subscriber?.status === 'trialing' ? 'Premium (trial)' : 'Premium';
+  else if (sub?.effectiveTier === 'basic') tierLabel = 'Basic';
+  el.innerHTML = `
+    <span>${currentUser.email}</span>
+    <span style="color:#64748b;">${tierLabel}</span>
+    ${sub?.subscriber ? '<button class="secondary" onclick="openBillingPortal()">Manage Billing</button>' : ''}
+    <button class="secondary" onclick="signOut()">Sign Out</button>
+  `;
+}
+
+function renderGateScreen() {
+  const el = document.getElementById('gateContent');
+  if (!currentUser) {
+    el.innerHTML = `
+      <div class="chart-title">Sign in to get started</div>
+      <div class="sub" style="margin-bottom:12px;">Blue Chip Swing Trader requires an account and an active subscription.</div>
+      <button onclick="openSignInModal()">Sign In</button>
+    `;
+    return;
+  }
+  el.innerHTML = `
+    <div class="chart-title">Choose a plan</div>
+    <div class="sub" style="margin-bottom:16px;">Every plan starts with a 15-day free trial with full Premium access. A card is required to start the trial; you won't be charged until it ends.</div>
+    <div style="display:flex; gap:16px; flex-wrap:wrap;">
+      <div style="flex:1; min-width:220px; border:1px solid #1e2740; border-radius:8px; padding:16px;">
+        <div style="font-weight:600; color:#f8fafc; margin-bottom:4px;">Basic -- $79/mo</div>
+        <div class="sub" style="margin-bottom:12px;">S&amp;P 500 scanner + AI Analysis</div>
+        <button onclick="startCheckout('basic')">Start Free Trial</button>
+      </div>
+      <div style="flex:1; min-width:220px; border:1px solid #c9a227; border-radius:8px; padding:16px;">
+        <div style="font-weight:600; color:#f8fafc; margin-bottom:4px;">Premium -- $129/mo</div>
+        <div class="sub" style="margin-bottom:12px;">Everything in Basic + AI Bracket (BYOK)</div>
+        <button onclick="startCheckout('premium')">Start Free Trial</button>
+      </div>
+    </div>
+  `;
+}
+
+function openSignInModal() { document.getElementById('signInModal').style.display = 'block'; }
+window.openSignInModal = openSignInModal;
+function closeSignInModal() { document.getElementById('signInModal').style.display = 'none'; }
+window.closeSignInModal = closeSignInModal;
+
+async function sendMagicLink() {
+  const email = document.getElementById('signInEmailInput').value.trim();
+  if (!email) return;
+  const statusEl2 = document.getElementById('signInStatus');
+  statusEl2.textContent = 'Sending...';
+  const { error } = await supabaseClient.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin + '/' } });
+  statusEl2.textContent = error ? `Error: ${error.message}` : 'Check your email for a sign-in link.';
+}
+window.sendMagicLink = sendMagicLink;
+
+async function signOut() {
+  await supabaseClient.auth.signOut();
+}
+window.signOut = signOut;
+
+async function startCheckout(tier) {
+  const res = await fetch('/.netlify/functions/create-checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + currentSession.access_token },
+    body: JSON.stringify({ tier })
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data?.url) { alert(data?.error || 'Could not start checkout.'); return; }
+  window.location.href = data.url;
+}
+window.startCheckout = startCheckout;
+
+async function openBillingPortal() {
+  const res = await fetch('/.netlify/functions/create-portal-session', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + currentSession.access_token }
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data?.url) { alert(data?.error || 'Could not open billing portal.'); return; }
+  window.location.href = data.url;
+}
+window.openBillingPortal = openBillingPortal;
+
+async function refreshSubscription() {
+  if (!currentSession) { subscriptionInfo = null; return; }
+  try {
+    const res = await fetch('/.netlify/functions/get-subscription', {
+      headers: { Authorization: 'Bearer ' + currentSession.access_token }
+    });
+    subscriptionInfo = await res.json();
+  } catch (e) {
+    console.error('Failed to refresh subscription', e);
+    subscriptionInfo = null;
+  }
+}
+
+async function applyAppGate() {
+  await refreshSubscription();
+  renderAccountMenu();
+  const entitled = isEntitled();
+  document.getElementById('appContent').style.display = entitled ? '' : 'none';
+  document.getElementById('gateScreen').style.display = entitled ? 'none' : 'block';
+  if (entitled) {
+    if (!appBootstrapped) {
+      appBootstrapped = true;
+      loadSP500Tickers().then(() => { const c = loadCache(); if (c) renderResults(c); });
+      renderPositions();
+      refreshPositionPrices();
+    }
+    updateBracketButtonState();
+  } else {
+    renderGateScreen();
+  }
+}
+
+supabaseClient.auth.onAuthStateChange((_event, session) => {
+  currentSession = session;
+  currentUser = session?.user || null;
+  applyAppGate();
+});
+supabaseClient.auth.getSession().then(({ data }) => {
+  currentSession = data.session;
+  currentUser = data.session?.user || null;
+  applyAppGate();
+});
 
 const calcRSI = (c,p=14)=>{if(c.length<p+1)return Array(c.length).fill(null);let r=[];let g=0,l=0;for(let i=1;i<=p;i++){let d=c[i]-c[i-1];d>=0?g+=d:l-=d}let ag=g/p,al=l/p;r.push(...Array(p).fill(null));r.push(100-(100/(1+(al===0?100:ag/al))));for(let i=p+1;i<c.length;i++){let d=c[i]-c[i-1];ag=(ag*(p-1)+Math.max(d,0))/p;al=(al*(p-1)+Math.max(-d,0))/p;r.push(100-(100/(1+(al===0?100:ag/al))))}return r};
 const calcSMA = (a,p)=>{let r=[];for(let i=0;i<a.length;i++){if(i<p-1)r.push(null);else r.push(a.slice(i-p+1,i+1).reduce((x,y)=>x+y,0)/p)}return r};
@@ -317,7 +490,9 @@ async function loadSP500Tickers() {
 }
 
 async function fetchYahooData(t) {
-  const res = await fetch(`/.netlify/functions/yahoo?ticker=${t}`);
+  const res = await fetch(`/.netlify/functions/yahoo?ticker=${t}`, {
+    headers: { Authorization: 'Bearer ' + currentSession.access_token }
+  });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return await res.json();
 }
@@ -487,7 +662,10 @@ window.forgetByokKey = forgetByokKey;
 // groups of 3 -- disable rather than crash on an uneven split).
 function updateBracketButtonState() {
   const n = getTopCandidates(lastResults).length;
-  if (!byokKey) {
+  if (!isPremiumEntitled()) {
+    bracketBtn.disabled = true;
+    bracketBtn.title = 'AI Bracket requires the Premium plan (or an active trial).';
+  } else if (!byokKey) {
     bracketBtn.disabled = true;
     bracketBtn.title = 'Add your Anthropic API key first (API Key Settings) to use AI Bracket.';
   } else if (n !== 9) {
@@ -628,7 +806,7 @@ function renderBracketResults(finalResult, roundOneWinners) {
 }
 
 async function runAiBracket() {
-  if (!byokKey || getTopCandidates(lastResults).length !== 9) return;
+  if (!isPremiumEntitled() || !byokKey || getTopCandidates(lastResults).length !== 9) return;
   bracketBtn.disabled = true;
   document.getElementById('bracketPanel').style.display = 'block';
   document.getElementById('bracketProgress').textContent = '';
@@ -945,7 +1123,7 @@ async function saveDailySnapshotIfNeeded(results) {
   try {
     await fetch('/.netlify/functions/save-snapshot', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + currentSession.access_token },
       body: JSON.stringify({
         date: new Date().toISOString().slice(0, 10),
         topPick: top9[0].ticker,
@@ -972,7 +1150,7 @@ async function fetchAIAnalysis() {
     const cacheKey = isDefaultAISettings() ? 'ai-analysis-v2-' + new Date().toISOString().slice(0,10) : null;
     const res = await fetch('/.netlify/functions/claude', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + currentSession.access_token },
       body: JSON.stringify({ messages: [{ role: 'user', content: prompt }], cacheKey })
     });
     const data = await res.json().catch(() => null);
@@ -1016,11 +1194,7 @@ refreshPositionsBtn.addEventListener('click',refreshPositionPrices);
 exportPositionsBtn.addEventListener('click',exportPositionsXLSX);
 byokSettingsBtn.addEventListener('click', openByokKeyModal);
 bracketBtn.addEventListener('click', runAiBracket);
-window.onclick = (e) => { if (e.target == document.getElementById('chartModal')) closeChart(); if (e.target == document.getElementById('positionModal')) closePositionModal(); if (e.target == document.getElementById('byokKeyModal')) closeByokKeyModal(); }
-loadSP500Tickers().then(()=>{let c=loadCache();if(c)renderResults(c)});
-updateBracketButtonState();
-renderPositions();
-refreshPositionPrices();
+window.onclick = (e) => { if (e.target == document.getElementById('chartModal')) closeChart(); if (e.target == document.getElementById('positionModal')) closePositionModal(); if (e.target == document.getElementById('byokKeyModal')) closeByokKeyModal(); if (e.target == document.getElementById('signInModal')) closeSignInModal(); }
 </script>
 </body>
 </html>

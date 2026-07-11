@@ -1,4 +1,5 @@
 import { getStore } from "@netlify/blobs";
+import { checkEntitlement } from "../lib/entitlement.mjs";
 
 // Records the deterministic daily top-9 + #1 pick for later forward-testing (comparing
 // the deterministic pick, and eventually the AI bracket's pick, against actual subsequent
@@ -8,6 +9,17 @@ import { getStore } from "@netlify/blobs";
 export default async (req) => {
   if (req.method !== "POST") {
     return new Response("Method Not Allowed", { status: 405 });
+  }
+
+  // Requires login (blocks anonymous scripted spam) but not an active subscription --
+  // this writes one global, first-write-wins record with no paid API call and no
+  // proprietary data returned, so subscription-gating it adds no security value.
+  const ent = await checkEntitlement(req, { authOnly: true });
+  if (!ent.ok) {
+    return new Response(JSON.stringify({ error: ent.error }), {
+      status: ent.status,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   try {
