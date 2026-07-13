@@ -55,6 +55,8 @@
 .chart-container { position: relative; height: 400px; margin-bottom: 20px; }
 .chart-title { font-family: Georgia, 'Times New Roman', serif; font-size: 18px; font-weight: 700; margin-bottom: 10px; }
 .disclaimer { margin-top: 20px; font-size: 12px; color: #64748b; line-height: 1.6; }
+.pull-quote { border-left: 3px solid #c9a227; background: rgba(201,162,39,0.06); border-radius: 0 8px 8px 0; padding: 14px 20px; margin: 16px 0 4px 0; font-style: italic; color: #cbd5e1; line-height: 1.6; }
+.pull-quote cite { display: block; margin-top: 10px; font-style: normal; font-size: 13px; color: #94a3b8; }
 .header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
 .brand-logo { height: 56px; width: auto; display: block; }
 @media (max-width: 640px) { .brand-logo { height: 26px; } }
@@ -250,6 +252,39 @@
   </div>
 </div>
 
+<div id="bracketExampleModal" class="modal">
+  <div class="modal-content" style="max-width:800px;">
+    <span class="close" onclick="closeBracketExampleModal()">&times;</span>
+    <div class="chart-title">AI Bracket — Example Run</div>
+    <div class="sub" style="margin-bottom:14px;">A real run, exactly as produced by the app — the only change is that all 9 stock names have been replaced with placeholder codes (ABC, DEF, GHI...) so this reads as a demonstration of how the AI reasons, not as a claim about any specific stock's performance.</div>
+    <div style="font-size:11px; color:#64748b; margin-bottom:14px; white-space:pre-line;">Group 1: comparing ABC, DEF, GHI... winner DEF
+Group 2: comparing JKL, MNO, PQR... winner JKL
+Group 3: comparing STU, VWX, YZA... winner VWX
+Final: comparing group winners... winner JKL</div>
+    <div class="sub" style="font-size:11px; margin-bottom:14px;">Confidence is scored on a 33%-100% scale for a 3-way comparison (33% = no better than a random guess among the 3 candidates, 100% = certain) — scores in the 55-65% range reflect a clear, decisive edge, not a weak call.</div>
+    <div style="font-size:13px; line-height:1.6;">
+      <div style="margin-bottom:16px;">
+        <div style="font-weight:600; color:#f8fafc; margin-bottom:4px;">The Pick: JKL (confidence 62%)</div>
+        <div>JKL stands out as the only candidate combining strong fundamentals (Quality 100, DCF margin of safety +37.6%) with a genuine technical reversal: a fresh bullish MACD cross with rising momentum, price basing near the lower Bollinger Band after a multi-month correction, and RSI at 43 leaving significant upside room before overbought conditions. DEF and VWX both show similar early-stage bullish MACD setups and reasonable Tech scores, but their DCF valuations are deeply negative (-148.5% and -39.7% respectively), meaning any rally is purely technical/momentum-driven with no fundamental backstop if the trade stalls. VWX also is still working off a large post-Feb decline and continues to make lower highs, suggesting distribution rather than a clean base yet. JKL's chart shows a healthier consolidation pattern (converging bands, higher lows recently) versus outright downtrend continuation risk in the other two, and gold-sector tailwinds support the fundamental thesis. The combination of full fundamental support plus technical inflection gives JKL the best risk/reward and durability across the 3-15 day window.</div>
+      </div>
+      <div style="font-weight:600; color:#f8fafc; margin-bottom:8px;">Top 3 for Diversification</div>
+      <div style="margin-bottom:12px;">
+        <div style="font-weight:600;">DEF (confidence 58%)</div>
+        <div>DEF shows an early-stage reversal off a downtrend bottom, reclaiming its 20SMA with bullish MACD and neutral RSI (49.9) giving room to run, plus highest Tech score (75). ABC and GHI are both still below/near their SMA with weaker Bearish/mixed MACD, and GHI's deeply negative DCF MOS undercuts fundamental support, while DEF offers the freshest momentum shift.</div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-weight:600;">JKL (confidence 62%) <span style="color:#c9a227;">— also The Pick</span></div>
+        <div>JKL has highest quality (100), strong positive DCF margin of safety (37.6%), fresh MACD bullish cross with upward momentum, and price stabilizing near lower band after a pullback — suggesting a reversal setup with room to run to target. MNO and PQR are less compelling: MNO has minimal margin of safety and is mid-range in a downtrend structure, while PQR's DCF is deeply negative, undermining fundamental support despite decent technicals.</div>
+      </div>
+      <div style="margin-bottom:0;">
+        <div style="font-weight:600;">VWX (confidence 58%)</div>
+        <div>VWX shows a fresh bullish MACD cross with price stabilizing above the SMA20 after a base-building period, and RSI near 49 leaves room to run without being overbought. STU and YZA are still in extended downtrends with price below declining SMA20 and lower RSI, suggesting continued weakness rather than a fresh reversal despite better DCF valuations.</div>
+      </div>
+    </div>
+    <div style="font-size:11px; font-style:italic; color:#64748b; margin-top:16px;">AI Bracket analysis is generated by Anthropic's Claude and is not financial advice. Verify independently before trading.</div>
+  </div>
+</div>
+
 <div id="bracketChartStage" style="position:absolute; left:-9999px; top:0;"></div>
 
 <script>
@@ -325,9 +360,101 @@ function renderGateScreen() {
   const el = document.getElementById('gateContent');
   if (!currentUser) {
     el.innerHTML = `
-      <div class="chart-title">Sign in to get started</div>
-      <div class="sub" style="margin-bottom:12px;">Blue Chip Swing Trader requires an account and an active subscription.</div>
-      <button onclick="openSignInModal()">Sign In</button>
+      <div style="max-width:900px;">
+        <div style="float:left; width:340px; max-width:45%; margin:4px 20px 16px 0;">
+          <img src="sp-pit-1.png" alt="Illustration of a chaotic S&amp;P 500 trading pit during a fast market" style="width:100%; display:block; border-radius:8px; border:1px solid #1e2740;">
+          <div class="sub" style="font-size:11px; margin-top:6px;">AI-generated caricature, not a photograph of any real event.</div>
+        </div>
+        <div class="chart-title" style="font-size:28px; line-height:1.3;">Fundamentally sound stocks, timed by momentum — not a black-box AI signal.</div>
+        <div class="sub" style="font-size:15px; max-width:680px;">Blue Chip Swing Trader scans the S&amp;P 500 every day. It first filters out companies that fail a strict, published fundamentals test (profitability, debt, growth, valuation), then ranks only the survivors by short-term technical timing. You never see a speculative name dressed up by a chart pattern — every ticker on the list already passed a quality bar first.</div>
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:8px;">
+          <button onclick="openSignInModal()" style="font-size:15px; padding:12px 26px;">Sign In to Get Started</button>
+          <span class="sub" style="margin:0; font-size:12px;">15-day free trial, full Premium access. Card required, no charge until the trial ends.</span>
+        </div>
+        <div style="clear:both;"></div>
+
+        <div style="border:1px solid #1e2740; border-radius:8px; padding:18px 20px; margin-top:24px;">
+          <div class="chart-title" style="font-size:20px;">How the ranking actually works</div>
+          <div class="sub" style="margin-bottom:14px;">No mystery signal. Every number on the results table comes from a named, published formula.</div>
+          <div style="float:right; width:300px; max-width:40%; margin:0 0 12px 20px;">
+            <img src="sp-pit-2.png" alt="Illustration of traders shouting and signaling buy/sell orders in a trading pit" style="width:100%; display:block; border-radius:8px; border:1px solid #1e2740;">
+            <div class="sub" style="font-size:11px; margin-top:6px;">AI-generated caricature, not a photograph of any real event.</div>
+          </div>
+          <div style="font-weight:600; color:#f8fafc; margin-bottom:6px;">1. Quality score (0-100) — is this a business worth owning?</div>
+          <div class="sub" style="margin-bottom:14px;">Each stock earns points across six checks tied to durable business quality: return on equity, return on invested capital, low debt relative to equity, five-year earnings growth, a reasonable valuation (low P/E or low price-to-book), and a discounted-cash-flow margin of safety. The score is the percentage of available points a stock actually earns — missing data is never penalized, only bad data is. A stock needs a Quality score of at least 40 just to qualify for the daily list at all. This approach draws on publicly known value-investing principles long associated with Warren Buffett; Blue Chip Swing Trader is not affiliated with, sponsored by, endorsed by, or associated with Warren Buffett, Berkshire Hathaway Inc., or any of their subsidiaries.</div>
+          <div style="font-weight:600; color:#f8fafc; margin-bottom:6px;">2. Tech score &amp; RSI — is now a good time?</div>
+          <div class="sub" style="margin-bottom:14px;">Among stocks that qualify, a Tech score checks four momentum conditions (price above its 20-day average, above-average volume, a Bollinger Band / volatility setup, and a turning MACD histogram). RSI only factors in once the Tech score itself is strong — weak-momentum names don't get a boost just because RSI looks oversold.</div>
+          <div style="font-weight:600; color:#f8fafc; margin-bottom:6px;">3. Hybrid rank — the number that actually sorts the list</div>
+          <div class="sub" style="margin-bottom:0;">Hybrid rank = 20% Quality + 30% RSI (only counted when Tech is strong) + 50% Tech. The daily list is the top 9 stocks by Hybrid rank after removing anything with RSI already above 50 — the same top 9 feeds both AI Analysis and AI Bracket.</div>
+          <div style="clear:both;"></div>
+        </div>
+
+        <div style="margin-top:24px;">
+          <div class="chart-title" style="font-size:20px;">Why this is different from a typical AI stock-picker</div>
+          <div class="grid" style="margin-top:10px;">
+            <div style="border:1px solid #1e2740; border-radius:8px; padding:14px 16px;"><div style="font-weight:600; color:#f8fafc; margin-bottom:4px;">Fundamentals-gated, not pure pattern-matching</div><div class="sub" style="margin-bottom:0;">Most AI screeners rank purely on technical patterns. Here, a stock has to clear a fundamentals bar before timing even matters.</div></div>
+            <div style="border:1px solid #1e2740; border-radius:8px; padding:14px 16px;"><div style="font-weight:600; color:#f8fafc; margin-bottom:4px;">Named formulas, not a black box</div><div class="sub" style="margin-bottom:0;">Quality, RSI, Tech, and Hybrid are all documented above — nothing is an opaque "AI signal" you have to trust blindly.</div></div>
+            <div style="border:1px solid #1e2740; border-radius:8px; padding:14px 16px;"><div style="font-weight:600; color:#f8fafc; margin-bottom:4px;">Flat pricing</div><div class="sub" style="margin-bottom:0;">Two tiers, no à la carte add-ons — no surprise usage fees that can push a "cheap" plan past $100-250/mo elsewhere.</div></div>
+            <div style="border:1px solid #1e2740; border-radius:8px; padding:14px 16px;"><div style="font-weight:600; color:#f8fafc; margin-bottom:4px;">Stocks only, on purpose</div><div class="sub" style="margin-bottom:0;">These other programs trade all assets — commodities, futures, etc. — whereas Blue Chip focuses on high quality, non-speculative stocks whose quality is determined by rigorous screening.</div></div>
+            <div style="border:1px solid #1e2740; border-radius:8px; padding:14px 16px;"><div style="font-weight:600; color:#f8fafc; margin-bottom:4px;">Positions tied to the same engine</div><div class="sub" style="margin-bottom:0;">My Positions tracks trades against the same scoring that generated the pick, not a separate bolt-on journal.</div></div>
+            <div style="border:1px solid #1e2740; border-radius:8px; padding:14px 16px;"><div style="font-weight:600; color:#f8fafc; margin-bottom:4px;">AI Bracket: head-to-head, not just a ranked list</div><div class="sub" style="margin-bottom:0;">Your qualifying stocks are randomly paired into an elimination bracket judged by Claude — no competitor we're aware of runs a head-to-head elimination structure for AI stock comparison. Because matchups are randomized daily, a pick isn't just restating our own ranking formula — it has to hold up against a different mix of competition each time. (Illustrative only: "Stock A" vs. "Stock B," not a real ticker.)</div></div>
+          </div>
+          <div class="sub" style="margin-top:14px; font-size:12px;">AI Bracket runs on your own Anthropic API key (BYOK): your AI Bracket data never touches our servers, and your subscription price stays flat regardless of how much you use it — no hidden markup on top of your own API usage.</div>
+        </div>
+
+        <div style="border:1px solid #1e2740; border-radius:8px; padding:18px 20px; margin-top:24px;">
+          <div class="chart-title" style="font-size:20px;">A complete chart for every S&amp;P 500 stock — not just the daily list</div>
+          <img src="BlueChip_APP_Chart.jpg" alt="Example price, Bollinger Band, RSI, and MACD chart the app generates for a stock" style="max-width:100%; border-radius:8px; border:1px solid #1e2740; margin-bottom:10px;">
+          <div class="sub" style="margin-bottom:0;">Click any ticker symbol — any of the 500, not just the ones on today's qualifying list — and its full chart opens instantly: closing price with Bollinger Bands and a 20-period moving average, RSI, and MACD with its signal-line crossovers and histogram shown positive or negative. It's a complete charting package included on top of AI Analysis and AI Bracket, for every stock in the index. Follow a stock that doesn't clear the fundamentals cutoff or make today's top 9? You can still pull up its chart instantly.</div>
+        </div>
+
+        <div style="border:1px solid #1e2740; border-radius:8px; padding:18px 20px; margin-top:24px;">
+          <div class="chart-title" style="font-size:20px;">See AI Bracket in action</div>
+          <div class="sub" style="margin-bottom:14px;">A real run, exactly as produced by the app — the only change is that all 9 stock names have been replaced with placeholder codes (ABC, DEF, GHI...) so this reads as a demonstration of how the AI reasons, not as a claim about any specific stock's performance.</div>
+          <div style="font-weight:600; color:#f8fafc; margin-bottom:4px;">The Pick: JKL (confidence 62%)</div>
+          <div class="sub" style="font-size:11px; margin-bottom:8px;">Confidence is scored on a 33%-100% scale for this 3-way comparison (33% = no better than a random guess among the 3 candidates, 100% = certain) — 62% reflects a clear, decisive edge, not a weak call.</div>
+          <div class="sub" style="margin-bottom:14px;">JKL stands out as the only candidate combining strong fundamentals (Quality 100, DCF margin of safety +37.6%) with a genuine technical reversal: a fresh bullish MACD cross with rising momentum, price basing near the lower Bollinger Band after a multi-month correction, and RSI at 43 leaving significant upside room before overbought conditions...</div>
+          <button onclick="openBracketExampleModal()" class="secondary">View Full Example</button>
+        </div>
+
+        <div style="border:1px solid #1e2740; border-radius:8px; padding:14px 16px; margin-top:24px;">
+          <div style="font-weight:600; color:#f8fafc; margin-bottom:4px;">Why isn't there a published backtest?</div>
+          <div class="sub" style="margin-bottom:0;">Because there's no single, fixed version of the tool to backtest. Every user sets their own DCF Growth Rate and Discount Rate, and those choices change which stocks qualify and how they rank on any given day — your results depend on the inputs you choose, not just the calendar date.</div>
+        </div>
+
+        <div class="pull-quote" style="margin-top:24px;">
+          "In the 1990s, I spent some time touring the floor of the Chicago Mercantile Exchange with Benjamin Sley, a patent attorney, and, at that time, also an S&amp;P 500 floor trader who showed me all around the trading floor. It was a memorable occasion."
+          <cite>— Judge Paul R. Michel, (Ret.), Chief Judge, U.S. Court of Appeals for the Federal Circuit</cite>
+        </div>
+        <div class="sub" style="font-size:11px; margin-top:6px; margin-bottom:20px;">DISCLAIMER: This is not an endorsement of BlueChipSwingTrader or any products offered by Mr. Sley. This is an acknowledgement that he was a floor trader in the S&amp;P 500 pit at the CME.</div>
+
+        <div class="chart-title" style="font-size:18px;">Built by someone who traded the pit, not just the backtest</div>
+        <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start; margin-bottom:24px;">
+          <img src="founder-photo.png" alt="Benjamin Sley, founder of Blue Chip Swing Trader" style="width:160px; height:160px; object-fit:cover; border-radius:8px; border:1px solid #1e2740; flex-shrink:0;">
+          <div class="sub" style="flex:1; min-width:240px; margin-bottom:0;">Blue Chip Swing Trader was built by Benjamin Sley, who was a floor trader in the S&amp;P 500 pit in the 1990's, at the Chicago Mercantile Exchange in Chicago — trading badge "BBS" — trained by Mickey Hoffman, a legendary S&amp;P 500 trader and educator. He traded through every kind of session the pit produced — slow, moderate, hectic, and CME-declared "fast markets," the exchange's own designation for periods of extreme volume and volatility. The fundamentals-first, timing-second approach in this tool grew out of that floor-trading background.</div>
+        </div>
+
+        <div style="border-top:1px solid #1e2740; padding-top:20px;">
+          <div class="chart-title">Choose a plan</div>
+          <div class="sub" style="margin-bottom:16px;">Every plan starts with a 15-day free trial with full Premium access. A card is required to start the trial; you won't be charged until it ends.</div>
+          <div style="display:flex; gap:16px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:220px; border:1px solid #1e2740; border-radius:8px; padding:16px;">
+              <div style="font-weight:600; color:#f8fafc; margin-bottom:4px;">Basic -- $79/mo</div>
+              <div class="sub" style="margin-bottom:12px;">S&amp;P 500 scanner + AI Analysis</div>
+              <button onclick="openSignInModal()">Sign In to Start Free Trial</button>
+            </div>
+            <div style="flex:1; min-width:220px; border:1px solid #c9a227; border-radius:8px; padding:16px;">
+              <div style="font-weight:600; color:#f8fafc; margin-bottom:4px;">Premium -- $129/mo</div>
+              <div class="sub" style="margin-bottom:12px;">Everything in Basic + AI Bracket (BYOK)</div>
+              <button onclick="openSignInModal()">Sign In to Start Free Trial</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="disclaimer" style="margin-top:24px;">
+          <strong>Disclaimer:</strong> Blue Chip Swing Trader™ is an independent software tool providing financial data and analytical filtering for educational purposes and is not an investment advisor; it does not provide personalized financial or trading advice. Short-term trading involves significant risk of loss. Blue Chip Swing Trader is not affiliated with, sponsored by, endorsed by, or associated with Warren Buffett, Berkshire Hathaway Inc., or any of their subsidiaries. Past performance ≠ future results.
+        </div>
+      </div>
     `;
     return;
   }
@@ -353,6 +480,11 @@ function openSignInModal() { document.getElementById('signInModal').style.displa
 window.openSignInModal = openSignInModal;
 function closeSignInModal() { document.getElementById('signInModal').style.display = 'none'; }
 window.closeSignInModal = closeSignInModal;
+
+function openBracketExampleModal() { document.getElementById('bracketExampleModal').style.display = 'block'; }
+window.openBracketExampleModal = openBracketExampleModal;
+function closeBracketExampleModal() { document.getElementById('bracketExampleModal').style.display = 'none'; }
+window.closeBracketExampleModal = closeBracketExampleModal;
 
 async function sendMagicLink() {
   const email = document.getElementById('signInEmailInput').value.trim();
@@ -1194,7 +1326,7 @@ refreshPositionsBtn.addEventListener('click',refreshPositionPrices);
 exportPositionsBtn.addEventListener('click',exportPositionsXLSX);
 byokSettingsBtn.addEventListener('click', openByokKeyModal);
 bracketBtn.addEventListener('click', runAiBracket);
-window.onclick = (e) => { if (e.target == document.getElementById('chartModal')) closeChart(); if (e.target == document.getElementById('positionModal')) closePositionModal(); if (e.target == document.getElementById('byokKeyModal')) closeByokKeyModal(); if (e.target == document.getElementById('signInModal')) closeSignInModal(); }
+window.onclick = (e) => { if (e.target == document.getElementById('chartModal')) closeChart(); if (e.target == document.getElementById('positionModal')) closePositionModal(); if (e.target == document.getElementById('byokKeyModal')) closeByokKeyModal(); if (e.target == document.getElementById('signInModal')) closeSignInModal(); if (e.target == document.getElementById('bracketExampleModal')) closeBracketExampleModal(); }
 </script>
 </body>
 </html>
