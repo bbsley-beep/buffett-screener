@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Manual — Blue Chip Swing Trader</title>
+<style>
+  body { font-family: -apple-system, sans-serif; margin: 0; background: #0a0e1a; color: #e2e8f0; line-height: 1.7; }
+  .container { max-width: 800px; margin: 0 auto; padding: 40px 20px 80px; }
+  h1 { font-family: Georgia, 'Times New Roman', serif; color: #f8fafc; }
+  h2 { font-family: Georgia, 'Times New Roman', serif; color: #f8fafc; font-size: 20px; margin-top: 40px; border-top: 1px solid #1e2740; padding-top: 24px; }
+  h3 { color: #f8fafc; font-size: 15px; margin-bottom: 6px; }
+  a { color: #3b82f6; }
+  .updated { color: #64748b; font-size: 13px; margin-bottom: 32px; }
+  .box { border: 1px solid #1e2740; border-radius: 8px; padding: 16px 18px; background: #0f1729; margin: 14px 0; }
+  .warn { border: 1px solid #dc2626; border-radius: 8px; padding: 12px 16px; background: #0f1729; color: #fecaca; font-size: 13px; margin: 14px 0; }
+  .steps { margin: 0; padding-left: 22px; }
+  .steps li { margin-bottom: 8px; }
+  .disclaimer { font-size: 12px; color: #64748b; margin-top: 40px; border-top: 1px solid #1e2740; padding-top: 20px; }
+  .toc { font-size: 14px; }
+  .toc a { display: block; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>User Manual</h1>
+  <div class="updated">Blue Chip Swing Trader™ — see also <a href="terms.html">Terms of Service</a> and <a href="privacy.html">Privacy Policy</a></div>
+
+  <div class="box toc">
+    <strong>On this page:</strong>
+    <a href="#api-key">1. Getting your Anthropic API key (for AI Bracket)</a>
+    <a href="#bracket">2. How AI Bracket works</a>
+    <a href="#charting">3. Charting any of the 500 stocks</a>
+  </div>
+
+  <h2 id="api-key">1. Getting your Anthropic API key (for AI Bracket)</h2>
+  <p>AI Bracket is a "bring your own key" (BYOK) feature: instead of running on Blue Chip Swing Trader's own server, it uses your own personal Anthropic API key, calling Anthropic directly from your browser. Blue Chip Swing Trader never sees or stores this key on any server — it's kept only in your own browser's local storage.</p>
+  <ol class="steps">
+    <li>Go to <a href="https://console.anthropic.com" target="_blank" rel="noreferrer">console.anthropic.com</a> and create an account (or sign in if you already have one).</li>
+    <li>In the console, find <strong>API Keys</strong> (usually under account or organization settings).</li>
+    <li>Click <strong>Create Key</strong>, give it any name you like (e.g. "Blue Chip Swing Trader").</li>
+    <li>Copy the key immediately — it starts with <code>sk-ant-...</code> and Anthropic only shows it to you once.</li>
+    <li>In Blue Chip Swing Trader, click <strong>API Key Settings</strong> in the toolbar, paste the key in, and click <strong>Save Key</strong>.</li>
+  </ol>
+  <div class="warn">
+    Since this key is stored in your browser and is a billable credential, we recommend setting a spending limit for it under Billing/Limits in the Anthropic console — the same way you'd protect any payment-linked credential. Anyone with access to that browser could use it, so treat it accordingly. You can remove it at any time with the "Forget This Key" button.
+  </div>
+  <p>A typical full AI Bracket run (4 comparisons) costs well under $0.10 on your own Anthropic account.</p>
+
+  <h2 id="bracket">2. How AI Bracket works</h2>
+  <p>Each day, the app narrows the S&amp;P 500 down to a qualifying top 9 candidates by Hybrid rank (Quality + RSI + Tech). AI Bracket runs those 9 through a single-elimination tournament judged by Claude:</p>
+  <div class="box">
+    <h3>Round 1 — three groups of three</h3>
+    <p style="margin:0;">The 9 candidates are randomly split into 3 groups of 3. For each group, Claude is shown each stock's chart (price, Bollinger Bands, 20-day moving average) along with its exact numeric data (RSI, MACD state, Quality score, DCF margin of safety, etc.) and picks one winner per group, with written reasoning.</p>
+  </div>
+  <div class="box">
+    <h3>Final round — the 3 group winners face off</h3>
+    <p style="margin:0;">The 3 round-1 winners are compared against each other the same way, with each winner's round-1 reasoning carried forward as context. Claude picks one overall winner — "The Pick" — plus a confidence score.</p>
+  </div>
+  <p><strong>Confidence</strong> is scored on a 33%–100% scale, because this is always a 3-way comparison: 33% means no better than a random guess among the three candidates being compared, 100% means certain. A score in the 55–65% range reflects a clear, decisive edge — it is not a weak result just because it's well under 100%.</p>
+  <p>Because the 9 candidates are shuffled into different groups every time you run it, a pick isn't just restating the deterministic Hybrid ranking — the same stock has to hold up against a different mix of competition each run.</p>
+  <p style="font-size:12px; font-style:italic; color:#64748b;">AI Bracket output is generated by Anthropic's Claude and is not financial advice. Verify independently before trading.</p>
+
+  <h2 id="charting">3. Charting any of the 500 stocks</h2>
+  <p>Blue Chip Swing Trader is also a complete, independent charting tool on its own — separate from AI Analysis and AI Bracket. Click <strong>any ticker symbol</strong> in the results table — any of the roughly 500 S&amp;P 500 stocks, not just the daily qualifying list or the top 9 — and its full chart opens instantly:</p>
+  <div class="box">
+    <ul style="margin:0; padding-left:20px;">
+      <li><strong>Price chart</strong> with Bollinger Bands and a 20-period moving average</li>
+      <li><strong>RSI</strong>, with overbought (70) and oversold (30) reference lines</li>
+      <li><strong>MACD</strong>, showing the signal-line crossover and the histogram (positive or negative)</li>
+    </ul>
+  </div>
+  <p>This means you can look up the chart for a stock you personally follow even if it doesn't clear the fundamentals cutoff or make today's top 9 — the full charting package is available for every stock in the index, independent of which features you're subscribed to see AI commentary on.</p>
+
+  <div class="disclaimer">
+    <strong>Disclaimer:</strong> Blue Chip Swing Trader™ is an independent software tool providing financial data and analytical filtering for educational purposes. It is not an investment advisor and does not provide personalized financial or trading advice. Short-term trading involves significant risk of loss.
+  </div>
+</div>
+</body>
+</html>
