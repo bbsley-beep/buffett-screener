@@ -28,6 +28,13 @@ export default async (req) => {
     });
   }
 
+  if (!PRICE_IDS[tier]) {
+    return new Response(JSON.stringify({ error: `No Stripe Price ID configured for tier "${tier}" (check STRIPE_PRICE_${tier.toUpperCase()} in Netlify env vars)` }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   const existing = await lookupSubscriber(ent.user);
   const siteUrl = process.env.URL || "https://bluechipswingtrader.com";
@@ -56,7 +63,18 @@ export default async (req) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: "Checkout creation failed", detail: err.message }), {
+    // Stripe SDK errors carry structured info beyond `.message` (which is sometimes
+    // empty) -- capture everything so a failure is diagnosable from the response alone,
+    // without needing to cross-reference Netlify's function logs separately.
+    console.error("create-checkout Stripe error:", {
+      type: err.type,
+      code: err.code,
+      message: err.message,
+      param: err.param,
+      raw: err.raw,
+    });
+    const detail = [err.message, err.code, err.type].filter(Boolean).join(" | ") || JSON.stringify(err).slice(0, 500);
+    return new Response(JSON.stringify({ error: "Checkout creation failed", detail }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
