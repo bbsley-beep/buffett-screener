@@ -19,6 +19,7 @@
   .disclaimer { font-size: 12px; color: #64748b; margin-top: 40px; border-top: 1px solid #1e2740; padding-top: 20px; }
   .toc { font-size: 14px; }
   .toc a { display: block; margin-bottom: 4px; }
+  code { background: #1e2740; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
 </style>
 </head>
 <body>
@@ -28,16 +29,70 @@
 
   <div class="box toc">
     <strong>On this page:</strong>
-    <a href="#api-key">1. Getting your Anthropic API key (for AI Bracket)</a>
-    <a href="#bracket">2. How AI Bracket works</a>
-    <a href="#charting">3. Charting any of the 500 stocks</a>
+    <a href="#purpose">1. What Blue Chip Swing Trader does</a>
+    <a href="#inputs">2. Setting your inputs</a>
+    <a href="#scanning">3. Scanning the S&amp;P 500</a>
+    <a href="#chart">4. Reading the chart</a>
+    <a href="#positions">5. My Positions — paper trading &amp; Excel export</a>
+    <a href="#api-key">6. Getting your Anthropic API key</a>
+    <a href="#bracket">7. How AI Bracket works</a>
+    <a href="#support">8. Support &amp; managing your subscription</a>
   </div>
 
-  <h2 id="api-key">1. Getting your Anthropic API key (for AI Bracket)</h2>
+  <h2 id="purpose">1. What Blue Chip Swing Trader does</h2>
+  <p>The idea behind this tool is to combine two things that are usually kept separate: high-quality, non-speculative stocks with solid underlying fundamentals, and short-term technical timing for a 3-15 day swing trade. Every stock has to clear a fundamentals bar first (profitability, low debt, growth, a reasonable valuation) before technical timing (RSI, Bollinger Bands, MACD) is even considered — you're never looking at a speculative or fundamentally weak name that just happens to look good on a chart. It's built for a short-term hold of a quality stock, not a long-term buy-and-hold position and not a purely momentum-driven trade.</p>
+
+  <h2 id="inputs">2. Setting your inputs</h2>
+  <p>Five inputs at the top of the page control how stocks are scored and how positions are sized. All five apply the next time you scan.</p>
+
+  <h3>DCF Growth 5yr %</h3>
+  <p>This is the assumed annual growth rate for a company's free cash flow over the next 5 years, used in the app's discounted cash flow (DCF) calculation to estimate what a stock is really worth today. A DCF works in two stages: an explicit forecast for the next several years (this is what "DCF Growth 5yr %" controls), followed by a "terminal value" representing everything beyond that — all of it discounted back to today's dollars, since a dollar received later is worth less than a dollar in hand now. The app fixes the terminal-value growth rate at a conservative 2.5% (a realistic long-term rate, in line with standard practice — anything much above that implies a company outgrowing the economy forever, which isn't sustainable), so your input only affects the near-term, explicit part of the forecast. A higher growth rate assumption produces a higher estimated intrinsic value; the app then compares that estimate to the stock's actual price to calculate the <strong>DCF Margin of Safety</strong> column — a positive number means the stock appears undervalued relative to your assumption, a negative number means it appears expensive.</p>
+
+  <h3>Discount Rate %</h3>
+  <p>Required annual rate of return used to discount future cash flows in the DCF (an equity/opportunity-cost assumption — not the Fed's policy rate).</p>
+
+  <h3>Account Size $</h3>
+  <p>Your total trading capital. Used together with Risk Per Trade % and Stop Loss % to size positions — it doesn't affect which stocks qualify or how they're ranked, only the Shares column.</p>
+
+  <h3>Risk Per Trade %</h3>
+  <p>Percentage of Account Size you're willing to lose if the stop-loss is hit. Combined with Stop Loss % and price, this sets the Shares column (position size) — it does not set the exit price itself.</p>
+
+  <h3>Stop Loss %</h3>
+  <p>Percentage below entry price used as the stop-loss trigger (1-5%). This sets the exit price; Risk Per Trade % then sizes how many shares to buy given that exit price.</p>
+
+  <h2 id="scanning">3. Scanning the S&amp;P 500</h2>
+  <p>Click <strong>Scan S&amp;P 500</strong> to fetch and score all roughly 500 stocks in the index. This takes about 2 minutes, since each stock's price history and fundamentals are fetched individually. Once it's done, the results table below fills in — sorted by Hybrid rank, with every qualifying stock's Quality, RSI, Tech, MACD, Hybrid, Price, Stop, Target, Shares, and DCF Margin of Safety.</p>
+  <p><strong>Force Rescan</strong> does the same thing but ignores the same-day cache and re-fetches everything fresh with your current inputs — use this if you've changed an input and want the table to reflect it immediately rather than waiting for tomorrow's scan.</p>
+
+  <h2 id="chart">4. Reading the chart</h2>
+  <p>Once a scan has completed, click <strong>any ticker symbol</strong> in the table to instantly bring up that stock's chart — three panels stacked on top of each other:</p>
+  <div class="box">
+    <h3>Top: Price</h3>
+    <p style="margin:0;">The blue line is daily closing price. The gold line is the 20-period simple moving average (SMA20) — the average closing price over the last 20 trading days, a common reference for the underlying trend. The dotted lines above and below are <strong>Bollinger Bands</strong>: they widen when the stock is more volatile and narrow when it's quieter, and they're centered on that same SMA20. Price near the lower band can signal an oversold, potential-bounce condition; price near the upper band can signal an overbought, extended condition.</p>
+  </div>
+  <div class="box">
+    <h3>Middle: RSI (purple)</h3>
+    <p style="margin:0;">RSI — Relative Strength Index — measures how strong recent price momentum has been, on a 0-100 scale. Above 50 means bullish momentum has the upper hand recently; below 50 means bearish momentum does. The red line at 70 marks overbought — you generally wouldn't want to buy a stock already near 70, since it's already had a strong short-term run-up and carries more downside risk from here. The green line at 30 marks oversold. A stock sitting in the 30-45 range, combined with other signals pointing the same way, can indicate it's forming a bottom and getting ready for a bounce — though RSI alone doesn't confirm that, it's one input among several.</p>
+  </div>
+  <div class="box">
+    <h3>Bottom: MACD (green/red histogram)</h3>
+    <p style="margin:0;">MACD — Moving Average Convergence/Divergence — compares two moving averages to gauge whether momentum is accelerating or fading. The histogram bars show the gap between the MACD line and its signal line: green (positive) bars mean bullish momentum, red (negative) bars mean bearish momentum. A <strong>rising histogram, even while it's still in red/negative territory</strong>, is a meaningful early signal — it means the downtrend is losing steam before the stock has actually crossed back to bullish, which can indicate the stock is basing and getting ready to bottom, ahead of a slower, lagging bullish crossover confirming it.</p>
+  </div>
+
+  <h2 id="positions">5. My Positions — paper trading &amp; Excel export</h2>
+  <p>The My Positions section lets you track trades — your own picks, or ones sourced from AI Analysis or AI Bracket — against your actual account size and risk settings.</p>
+  <ol class="steps">
+    <li>Click <strong>+ Enter Position</strong> and type in the ticker, buy price, number of shares, and buy date.</li>
+    <li>The next time you click <strong>Scan S&amp;P 500</strong> (or <strong>Refresh Prices</strong>), current prices are fetched automatically and <strong>P/L $</strong> and <strong>P/L %</strong> are calculated live for every position you've entered.</li>
+    <li>The portfolio summary shows all of your open positions together, and a separate table tracks closed positions with realized P/L once you close one out.</li>
+  </ol>
+  <p>To keep a permanent record, click <strong>Export Positions (Excel)</strong> — this generates a real, formatted <code>.xlsx</code> spreadsheet (not just a plain CSV), since positions are stored only in your own browser and not on our servers. Exporting weekly is a good habit so you always have your own copy.</p>
+
+  <h2 id="api-key">6. Getting your Anthropic API key</h2>
   <p>AI Bracket is a "bring your own key" (BYOK) feature: instead of running on Blue Chip Swing Trader's own server, it uses your own personal Anthropic API key, calling Anthropic directly from your browser. Blue Chip Swing Trader never sees or stores this key on any server — it's kept only in your own browser's local storage.</p>
   <ol class="steps">
-    <li>Go to <a href="https://console.anthropic.com" target="_blank" rel="noreferrer">console.anthropic.com</a> and create an account (or sign in if you already have one).</li>
-    <li>In the console, find <strong>API Keys</strong> (usually under account or organization settings).</li>
+    <li>Go to <a href="https://platform.claude.com/dashboard" target="_blank" rel="noreferrer">platform.claude.com/dashboard</a> and create an account (or sign in if you already have one) — it's free to sign up, and you only pay for what you actually use.</li>
+    <li>Find <strong>API Keys</strong> (usually under account or organization settings).</li>
     <li>Click <strong>Create Key</strong>, give it any name you like (e.g. "Blue Chip Swing Trader").</li>
     <li>Copy the key immediately — it starts with <code>sk-ant-...</code> and Anthropic only shows it to you once.</li>
     <li>In Blue Chip Swing Trader, click <strong>API Key Settings</strong> in the toolbar, paste the key in, and click <strong>Save Key</strong>.</li>
@@ -45,9 +100,9 @@
   <div class="warn">
     Since this key is stored in your browser and is a billable credential, we recommend setting a spending limit for it under Billing/Limits in the Anthropic console — the same way you'd protect any payment-linked credential. Anyone with access to that browser could use it, so treat it accordingly. You can remove it at any time with the "Forget This Key" button.
   </div>
-  <p>A typical full AI Bracket run (4 comparisons) costs well under $0.10 on your own Anthropic account.</p>
+  <p>Creating the account and key is free; usage is billed pay-as-you-go, and a typical full AI Bracket run (4 comparisons) costs well under $0.10.</p>
 
-  <h2 id="bracket">2. How AI Bracket works</h2>
+  <h2 id="bracket">7. How AI Bracket works</h2>
   <p>Each day, the app narrows the S&amp;P 500 down to a qualifying top 9 candidates by Hybrid rank (Quality + RSI + Tech). AI Bracket runs those 9 through a single-elimination tournament judged by Claude:</p>
   <div class="box">
     <h3>Round 1 — three groups of three</h3>
@@ -59,18 +114,18 @@
   </div>
   <p><strong>Confidence</strong> is scored on a 33%–100% scale, because this is always a 3-way comparison: 33% means no better than a random guess among the three candidates being compared, 100% means certain. A score in the 55–65% range reflects a clear, decisive edge — it is not a weak result just because it's well under 100%.</p>
   <p>Because the 9 candidates are shuffled into different groups every time you run it, a pick isn't just restating the deterministic Hybrid ranking — the same stock has to hold up against a different mix of competition each run.</p>
+
+  <div class="box">
+    <h3>Sample output</h3>
+    <p style="margin-bottom:10px;"><strong>The Pick: JKL (confidence 62%)</strong><br>
+    JKL stands out as the only candidate combining strong fundamentals (Quality 100, DCF margin of safety +37.6%) with a genuine technical reversal: a fresh bullish MACD cross with rising momentum, price basing near the lower Bollinger Band after a multi-month correction, and RSI at 43 leaving significant upside room before overbought conditions. DEF and VWX both show similar early-stage bullish setups, but their DCF valuations are deeply negative, meaning any rally is purely technical/momentum-driven with no fundamental backstop if the trade stalls.</p>
+    <p style="margin:0; font-size:12px; color:#64748b;">(Stock names replaced with placeholder codes — this is a real run, not a mockup.)</p>
+  </div>
   <p style="font-size:12px; font-style:italic; color:#64748b;">AI Bracket output is generated by Anthropic's Claude and is not financial advice. Verify independently before trading.</p>
 
-  <h2 id="charting">3. Charting any of the 500 stocks</h2>
-  <p>Blue Chip Swing Trader is also a complete, independent charting tool on its own — separate from AI Analysis and AI Bracket. Click <strong>any ticker symbol</strong> in the results table — any of the roughly 500 S&amp;P 500 stocks, not just the daily qualifying list or the top 9 — and its full chart opens instantly:</p>
-  <div class="box">
-    <ul style="margin:0; padding-left:20px;">
-      <li><strong>Price chart</strong> with Bollinger Bands and a 20-period moving average</li>
-      <li><strong>RSI</strong>, with overbought (70) and oversold (30) reference lines</li>
-      <li><strong>MACD</strong>, showing the signal-line crossover and the histogram (positive or negative)</li>
-    </ul>
-  </div>
-  <p>This means you can look up the chart for a stock you personally follow even if it doesn't clear the fundamentals cutoff or make today's top 9 — the full charting package is available for every stock in the index, independent of which features you're subscribed to see AI commentary on.</p>
+  <h2 id="support">8. Support &amp; managing your subscription</h2>
+  <p>Questions or issues: email <a href="mailto:support@bluechipswingtrader.com">support@bluechipswingtrader.com</a>.</p>
+  <p>To update your payment method, view invoices, switch plans, or cancel, click <strong>Manage Billing</strong> next to your email in the top-right corner — this opens your own secure Stripe billing portal. <strong>Sign Out</strong>, right next to it, ends your current session (your watchlist, positions, and any saved API key stay in this browser and will still be there next time you sign back in).</p>
 
   <div class="disclaimer">
     <strong>Disclaimer:</strong> Blue Chip Swing Trader™ is an independent software tool providing financial data and analytical filtering for educational purposes. It is not an investment advisor and does not provide personalized financial or trading advice. Short-term trading involves significant risk of loss.
