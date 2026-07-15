@@ -41,6 +41,9 @@
 
   <h2 id="purpose">1. What Blue Chip Swing Trader does</h2>
   <p>The idea behind this tool is to combine two things that are usually kept separate: high-quality, non-speculative stocks with solid underlying fundamentals, and short-term technical timing for a 3-15 day swing trade. Every stock has to clear a fundamentals bar first (profitability, low debt, growth, a reasonable valuation) before technical timing (RSI, Bollinger Bands, MACD) is even considered — you're never looking at a speculative or fundamentally weak name that just happens to look good on a chart. It's built for a short-term hold of a quality stock, not a long-term buy-and-hold position and not a purely momentum-driven trade.</p>
+  <div class="box">
+    <p style="margin:0;">This is a different starting point from most AI stock-picking tools. Many of them rank purely on chart patterns, with no fundamentals gate at all — a stock can look "cheap" technically while its underlying business is deteriorating. Others trade every asset class — commodities, futures, options — where speed and speculation matter more than business quality. Blue Chip Swing Trader stays deliberately narrower: S&amp;P 500 stocks only, and every one of them has already cleared a published, named quality bar before timing is even considered.</p>
+  </div>
 
   <h2 id="inputs">2. Setting your inputs</h2>
   <p>Five inputs at the top of the page control how stocks are scored and how positions are sized. All five apply the next time you scan.</p>
@@ -61,6 +64,7 @@
   <p>Percentage below entry price used as the stop-loss trigger (1-5%). This sets the exit price; Risk Per Trade % then sizes how many shares to buy given that exit price.</p>
 
   <h2 id="scanning">3. Scanning the S&amp;P 500</h2>
+  <img src="BlueChip_Ticker_Image_annotated.png" alt="Screenshot of Blue Chip Swing Trader with an arrow pointing to the Scan S&amp;P 500 button" style="max-width:100%; border-radius:8px; border:1px solid #1e2740; margin-bottom:10px;">
   <p>Click <strong>Scan S&amp;P 500</strong> to fetch and score all roughly 500 stocks in the index. This takes about 2 minutes, since each stock's price history and fundamentals are fetched individually. Once it's done, the results table below fills in — sorted by Hybrid rank, with every qualifying stock's Quality, RSI, Tech, MACD, Hybrid, Price, Stop, Target, Shares, and DCF Margin of Safety.</p>
   <p><strong>Force Rescan</strong> does the same thing but ignores the same-day cache and re-fetches everything fresh with your current inputs — use this if you've changed an input and want the table to reflect it immediately rather than waiting for tomorrow's scan.</p>
 
@@ -78,6 +82,7 @@
     <h3>Bottom: MACD (green/red histogram)</h3>
     <p style="margin:0;">MACD — Moving Average Convergence/Divergence — compares two moving averages to gauge whether momentum is accelerating or fading. The histogram bars show the gap between the MACD line and its signal line: green (positive) bars mean bullish momentum, red (negative) bars mean bearish momentum. A <strong>rising histogram, even while it's still in red/negative territory</strong>, is a meaningful early signal — it means the downtrend is losing steam before the stock has actually crossed back to bullish, which can indicate the stock is basing and getting ready to bottom, ahead of a slower, lagging bullish crossover confirming it.</p>
   </div>
+  <p>This full three-panel chart comes with every plan, for every stock in the index — it's not a metered add-on you pay extra for as you use it more, the way some competing platforms structure their per-feature usage fees.</p>
 
   <h2 id="positions">5. My Positions — paper trading &amp; Excel export</h2>
   <p>The My Positions section lets you track trades — your own picks, or ones sourced from AI Analysis or AI Bracket — against your actual account size and risk settings.</p>
@@ -87,6 +92,7 @@
     <li>The portfolio summary shows all of your open positions together, and a separate table tracks closed positions with realized P/L once you close one out.</li>
   </ol>
   <p>To keep a permanent record, click <strong>Export Positions (Excel)</strong> — this generates a real, formatted <code>.xlsx</code> spreadsheet (not just a plain CSV), since positions are stored only in your own browser and not on our servers. Exporting weekly is a good habit so you always have your own copy.</p>
+  <p>My Positions is tied to the same scoring engine that generated the pick in the first place — not a bolt-on trade journal disconnected from the analysis behind it.</p>
 
   <h2 id="api-key">6. Getting your Anthropic API key</h2>
   <p>AI Bracket is a "bring your own key" (BYOK) feature: instead of running on Blue Chip Swing Trader's own server, it uses your own personal Anthropic API key, calling Anthropic directly from your browser. Blue Chip Swing Trader never sees or stores this key on any server — it's kept only in your own browser's local storage.</p>
@@ -101,6 +107,7 @@
     Since this key is stored in your browser and is a billable credential, we recommend setting a spending limit for it under Billing/Limits in the Anthropic console — the same way you'd protect any payment-linked credential. Anyone with access to that browser could use it, so treat it accordingly. You can remove it at any time with the "Forget This Key" button.
   </div>
   <p>Creating the account and key is free; usage is billed pay-as-you-go, and a typical full AI Bracket run (4 comparisons) costs well under $0.10.</p>
+  <p>Because AI Bracket runs directly from your browser to Anthropic on your own key, that data never touches Blue Chip Swing Trader's servers at all — and your subscription price stays flat no matter how often you run it, with no hidden markup layered on top of your own usage.</p>
 
   <h2 id="bracket">7. How AI Bracket works</h2>
   <p>Each day, the app narrows the S&amp;P 500 down to a qualifying top 9 candidates by Hybrid rank (Quality + RSI + Tech). AI Bracket runs those 9 through a single-elimination tournament judged by Claude:</p>
@@ -114,6 +121,7 @@
   </div>
   <p><strong>Confidence</strong> is scored on a 33%–100% scale, because this is always a 3-way comparison: 33% means no better than a random guess among the three candidates being compared, 100% means certain. A score in the 55–65% range reflects a clear, decisive edge — it is not a weak result just because it's well under 100%.</p>
   <p>Because the 9 candidates are shuffled into different groups every time you run it, a pick isn't just restating the deterministic Hybrid ranking — the same stock has to hold up against a different mix of competition each run.</p>
+  <p>This head-to-head elimination format is a genuinely different mechanic from a typical AI stock screener — most just hand you a ranked list or a bare buy/sell signal with a confidence number and no supporting narrative. Here, every pick comes with written reasoning citing specific chart patterns and named indicators, and has to actually beat two other quality candidates to earn it, not just top a static formula.</p>
 
   <div class="box">
     <h3>Sample output</h3>
