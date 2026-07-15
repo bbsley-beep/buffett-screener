@@ -336,8 +336,8 @@ const TERMINAL_GROWTH_PCT = 2.5; // Hardcoded terminal growth rate for DCF (was 
 // Supabase anon key is public-safe by design (meant to be exposed client-side) -- hardcoded
 // here rather than injected at build time since this app has no bundler/build step.
 // TODO: replace with the real project URL/anon key once the Supabase project is created.
-const SUPABASE_URL = 'https://YOUR-PROJECT-REF.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR-SUPABASE-ANON-KEY';
+const SUPABASE_URL = 'https://wvgghgeqsewmfowpzokb.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable__A2vwfJvAFHuOx1e2296qg_GIBebKxO';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let watchlist = JSON.parse(localStorage.getItem(WATCH_KEY) || '[]');
 let positions = JSON.parse(localStorage.getItem(POSITIONS_KEY) || '[]');
