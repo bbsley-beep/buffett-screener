@@ -8,26 +8,31 @@
   body { font-family: -apple-system, sans-serif; margin: 0; background: #0a0e1a; color: #e2e8f0; line-height: 1.7; }
   .container { max-width: 800px; margin: 0 auto; padding: 40px 20px 80px; }
   h1 { font-family: Georgia, 'Times New Roman', serif; color: #f8fafc; }
-  h2 { font-family: Georgia, 'Times New Roman', serif; color: #f8fafc; font-size: 18px; margin-top: 32px; }
+  h2 { font-family: Georgia, 'Times New Roman', serif; color: #f8fafc; font-size: 18px; margin-top: 32px; border-top: 1px solid #1e2740; padding-top: 20px; }
   a { color: #3b82f6; }
   .updated { color: #64748b; font-size: 13px; margin-bottom: 32px; }
-  .box { border: 1px solid #1e2740; border-radius: 8px; padding: 16px 18px; background: #0f1729; }
+  .box { border: 1px solid #1e2740; border-radius: 8px; padding: 16px 18px; background: #0f1729; margin: 14px 0; }
   .disclaimer { font-size: 12px; color: #64748b; margin-top: 32px; border-top: 1px solid #1e2740; padding-top: 20px; }
 </style>
 </head>
 <body>
 <div class="container">
   <h1>Privacy Policy</h1>
-  <div class="updated">Blue Chip Swing Trader™ — see also our <a href="terms.html">Terms of Service</a> and <a href="manual.html">User Manual</a></div>
+  <div class="updated">
+    <strong>Blue Chip Swing Trader™</strong><br>
+    Effective Date: July 15, 2026<br>
+    This Privacy Policy is incorporated into, and subject to, our <a href="terms.html">Terms of Service</a>, including its arbitration, governing law, and limitation of liability provisions. See also our <a href="manual.html">User Manual</a>.
+  </div>
 
   <h2>1. What We Collect</h2>
-  <p>When you sign in, we collect your <strong>email address</strong> (used for passwordless magic-link sign-in via Supabase — we never see or store a password). When you subscribe, Stripe collects your payment details directly; we never receive or store your card number. We store only your Stripe customer ID, subscription ID, plan tier, subscription status, and trial dates, so the app can check your entitlement. To prevent free-trial abuse, we also store a one-way card "fingerprint" provided by Stripe — a non-reversible identifier for the card used, not the card number itself.</p>
+  <p>When you sign in, we collect your email address (used for passwordless magic-link sign-in via Supabase — we never see or store a password). When you subscribe, Stripe collects your payment details directly; we never receive or store your card number. We store only your Stripe customer ID, subscription ID, plan tier, subscription status, and trial dates, so the app can check your entitlement. To prevent free-trial abuse, we also store a one-way card "fingerprint" provided by Stripe — a non-reversible identifier for the card used, not the card number itself. We retain this card fingerprint only for as long as necessary to detect free-trial abuse, and it cannot be used to derive your actual card number.</p>
 
   <h2>2. What Stays in Your Browser Only</h2>
   <p>Your watchlist, your entered positions, and your Anthropic API key (for the optional AI Bracket feature) are stored only in your own browser's local storage. None of this is ever transmitted to or stored on our servers.</p>
 
   <h2>3. AI Features</h2>
-  <p><strong>AI Analysis</strong> sends your current qualifying stock list (tickers and scores only — no personal data) to Anthropic's Claude API for commentary. <strong>AI Bracket</strong> uses your own Anthropic API key to send chart images and stock data directly from your browser to Anthropic — this never passes through our servers at all, and we have no visibility into it.</p>
+  <p>AI Analysis sends your current qualifying stock list (tickers and scores only — no personal data) to Anthropic's Claude API for commentary. AI Bracket uses your own Anthropic API key to send chart images and stock data directly from your browser to Anthropic — this never passes through our servers at all, and we have no visibility into it.</p>
+  <p>BCST does not control, and is not responsible for, how Anthropic processes, retains, or uses data submitted to its API. Anthropic's handling of this data is governed by Anthropic's own privacy policy and terms, available at anthropic.com. For AI Bracket specifically, because the request goes directly from your browser to Anthropic using your own API key, BCST has no technical visibility into, log of, or ability to delete that data on your behalf.</p>
 
   <h2>4. Who We Share Data With</h2>
   <div class="box">
@@ -39,21 +44,36 @@
       <li><strong>Yahoo Finance</strong> — source of public market data displayed in the app (no personal data is sent)</li>
     </ul>
   </div>
-  <p style="margin-top:14px;">We do not sell your personal data, and we do not use advertising trackers.</p>
+  <p>Each of these providers processes data under its own privacy policy; we encourage you to review Stripe's, Supabase's, Resend's, and Anthropic's privacy practices directly.</p>
+  <p><strong>We do not sell your personal data, and we do not use advertising trackers.</strong></p>
 
   <h2>5. Cookies &amp; Sessions</h2>
   <p>We use a session token (via Supabase) stored in your browser to keep you signed in. We do not use advertising or cross-site tracking cookies.</p>
 
-  <h2>6. Data Retention &amp; Deletion</h2>
-  <p>We retain account and subscription data for as long as your account is active, plus a reasonable period afterward for billing records. To request deletion of your account and associated data, email <a href="mailto:support@bluechipswingtrader.com">support@bluechipswingtrader.com</a>.</p>
+  <h2>6. Data Security</h2>
+  <p>We use industry-standard measures (including encrypted connections and reputable third-party infrastructure providers) to protect your data. However, <strong>no method of transmission or storage over the internet is completely secure</strong>, and we cannot guarantee absolute security. You are responsible for keeping your device and any locally stored data (including your Anthropic API key, if used) secure.</p>
 
-  <h2>7. Children's Privacy</h2>
+  <h2>7. Data Retention &amp; Deletion</h2>
+  <p>We retain account and subscription data for as long as your account is active. After account closure, we retain billing-related records for <strong>seven (7) years</strong> to comply with tax and accounting obligations, and delete or anonymize other account data within <strong>ninety (90) days</strong> of your deletion request, except where retention is required by law.</p>
+  <p>To request deletion of your account and associated data, email <a href="mailto:support@bluechipswingtrader.com">support@bluechipswingtrader.com</a>.</p>
+
+  <h2>8. Your Privacy Rights</h2>
+  <p>Depending on your location, you may have the right to request access to, correction of, or deletion of your personal data, or to object to certain processing. To exercise any of these rights, email <a href="mailto:support@bluechipswingtrader.com">support@bluechipswingtrader.com</a>. We will respond within a reasonable time and may need to verify your identity before fulfilling a request.</p>
+  <p><strong>California Residents:</strong> We do not sell or share personal information for cross-context behavioral advertising, and we do not use advertising trackers. You may still request access to or deletion of the personal information we hold about you, as described above.</p>
+
+  <h2>9. International Users</h2>
+  <p>The Service and our data processing take place primarily in the United States. If you access the Service from outside the United States, you understand that your information will be transferred to, stored, and processed in the United States, which may not have the same data protection laws as your home jurisdiction. By using the Service, you consent to this transfer. Nothing in this Section limits any rights you may have under mandatory law in your jurisdiction of residence.</p>
+
+  <h2>10. Children's Privacy</h2>
   <p>The Service is not directed at, and should not be used by, anyone under 18 years of age.</p>
 
-  <h2>8. Changes to This Policy</h2>
-  <p>We may update this Privacy Policy from time to time. Material changes will be reflected on this page with an updated date.</p>
+  <h2>11. Do Not Track</h2>
+  <p>Our Service does not currently respond to browser "Do Not Track" signals.</p>
 
-  <h2>9. Contact</h2>
+  <h2>12. Changes to This Policy</h2>
+  <p>We may update this Privacy Policy from time to time. Material changes will be reflected on this page with an updated date. Your continued use of the Service after changes take effect constitutes acceptance of the revised policy.</p>
+
+  <h2>13. Contact</h2>
   <p>Questions about this Privacy Policy can be sent to <a href="mailto:support@bluechipswingtrader.com">support@bluechipswingtrader.com</a>.</p>
 
   <div class="disclaimer">
