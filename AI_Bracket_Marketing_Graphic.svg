@@ -1,0 +1,125 @@
+<svg width="1200" height="1150" viewBox="0 0 1200 1150" xmlns="http://www.w3.org/2000/svg" font-family="Liberation Sans, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M1 1L8 5L1 9" fill="none" stroke="#4a5570" stroke-width="1.6"/>
+    </marker>
+  </defs>
+
+  <!-- background -->
+  <rect x="0" y="0" width="1200" height="1150" fill="#0b1220"/>
+
+  <!-- header -->
+  <text x="600" y="58" text-anchor="middle" fill="#2dd4bf" font-size="18" font-weight="bold" letter-spacing="3">BLUE CHIP SWING TRADER</text>
+  <text x="600" y="112" text-anchor="middle" fill="#f5f7fa" font-size="52" font-weight="bold">AI Bracket</text>
+  <text x="600" y="150" text-anchor="middle" fill="#9aa3b5" font-size="22">Head-to-head AI elimination for your top swing-trade setups</text>
+
+  <line x1="90" y1="182" x2="1110" y2="182" stroke="#24304a" stroke-width="1"/>
+
+  <!-- round 1 label -->
+  <text x="600" y="220" text-anchor="middle" fill="#2dd4bf" font-size="17" font-weight="bold" letter-spacing="2">ROUND 1 — THREE RANDOMIZED GROUPS OF 3</text>
+
+  <!-- group headers -->
+  <text x="240" y="258" text-anchor="middle" fill="#c7ccd6" font-size="20" font-weight="bold">Group 1</text>
+  <text x="600" y="258" text-anchor="middle" fill="#c7ccd6" font-size="20" font-weight="bold">Group 2</text>
+  <text x="960" y="258" text-anchor="middle" fill="#c7ccd6" font-size="20" font-weight="bold">Group 3</text>
+
+  <!-- Group 1 boxes: ABC, DEF, GHI -->
+  <g>
+    <rect x="80" y="282" width="320" height="58" rx="8" fill="#141b2e" stroke="#24304a" stroke-width="1"/>
+    <text x="104" y="318" fill="#f5f7fa" font-size="24" font-weight="bold">ABC</text>
+    <text x="376" y="317" text-anchor="end" fill="#9aa3b5" font-size="14">Quality 75</text>
+
+    <rect x="80" y="356" width="320" height="58" rx="8" fill="#141b2e" stroke="#24304a" stroke-width="1"/>
+    <text x="104" y="392" fill="#f5f7fa" font-size="24" font-weight="bold">DEF</text>
+    <text x="376" y="391" text-anchor="end" fill="#9aa3b5" font-size="14">Quality 65</text>
+
+    <rect x="80" y="430" width="320" height="58" rx="8" fill="#141b2e" stroke="#24304a" stroke-width="1"/>
+    <text x="104" y="466" fill="#f5f7fa" font-size="24" font-weight="bold">GHI</text>
+    <text x="376" y="465" text-anchor="end" fill="#9aa3b5" font-size="14">Quality 90</text>
+  </g>
+
+  <!-- Group 2 boxes: JKL, MNO, PQR -->
+  <g>
+    <rect x="440" y="282" width="320" height="58" rx="8" fill="#141b2e" stroke="#24304a" stroke-width="1"/>
+    <text x="464" y="318" fill="#f5f7fa" font-size="24" font-weight="bold">JKL</text>
+    <text x="736" y="317" text-anchor="end" fill="#9aa3b5" font-size="14">Quality 100</text>
+
+    <rect x="440" y="356" width="320" height="58" rx="8" fill="#141b2e" stroke="#24304a" stroke-width="1"/>
+    <text x="464" y="392" fill="#f5f7fa" font-size="24" font-weight="bold">MNO</text>
+    <text x="736" y="391" text-anchor="end" fill="#9aa3b5" font-size="14">Quality 40</text>
+
+    <rect x="440" y="430" width="320" height="58" rx="8" fill="#141b2e" stroke="#24304a" stroke-width="1"/>
+    <text x="464" y="466" fill="#f5f7fa" font-size="24" font-weight="bold">PQR</text>
+    <text x="736" y="465" text-anchor="end" fill="#9aa3b5" font-size="14">Quality 100</text>
+  </g>
+
+  <!-- Group 3 boxes: STU, VWX, YZA -->
+  <g>
+    <rect x="800" y="282" width="320" height="58" rx="8" fill="#141b2e" stroke="#24304a" stroke-width="1"/>
+    <text x="824" y="318" fill="#f5f7fa" font-size="24" font-weight="bold">STU</text>
+    <text x="1096" y="317" text-anchor="end" fill="#9aa3b5" font-size="14">Quality 65</text>
+
+    <rect x="800" y="356" width="320" height="58" rx="8" fill="#141b2e" stroke="#24304a" stroke-width="1"/>
+    <text x="824" y="392" fill="#f5f7fa" font-size="24" font-weight="bold">VWX</text>
+    <text x="1096" y="391" text-anchor="end" fill="#9aa3b5" font-size="14">Quality 65</text>
+
+    <rect x="800" y="430" width="320" height="58" rx="8" fill="#141b2e" stroke="#24304a" stroke-width="1"/>
+    <text x="824" y="466" fill="#f5f7fa" font-size="24" font-weight="bold">YZA</text>
+    <text x="1096" y="465" text-anchor="end" fill="#9aa3b5" font-size="14">Quality 85</text>
+  </g>
+
+  <!-- arrows down to winners -->
+  <line x1="240" y1="488" x2="240" y2="512" stroke="#4a5570" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <line x1="600" y1="488" x2="600" y2="512" stroke="#4a5570" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <line x1="960" y1="488" x2="960" y2="512" stroke="#4a5570" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- winner labels -->
+  <text x="240" y="508" text-anchor="middle" fill="#f2a623" font-size="13" font-weight="bold" letter-spacing="1">WINNER</text>
+  <text x="600" y="508" text-anchor="middle" fill="#f2a623" font-size="13" font-weight="bold" letter-spacing="1">WINNER</text>
+  <text x="960" y="508" text-anchor="middle" fill="#f2a623" font-size="13" font-weight="bold" letter-spacing="1">WINNER</text>
+
+  <!-- winner boxes -->
+  <rect x="130" y="516" width="220" height="62" rx="8" fill="#2c2308" stroke="#f2a623" stroke-width="1.5"/>
+  <text x="240" y="555" text-anchor="middle" fill="#fcdea3" font-size="30" font-weight="bold">DEF</text>
+
+  <rect x="490" y="516" width="220" height="62" rx="8" fill="#2c2308" stroke="#f2a623" stroke-width="1.5"/>
+  <text x="600" y="555" text-anchor="middle" fill="#fcdea3" font-size="30" font-weight="bold">JKL</text>
+
+  <rect x="850" y="516" width="220" height="62" rx="8" fill="#2c2308" stroke="#f2a623" stroke-width="1.5"/>
+  <text x="960" y="555" text-anchor="middle" fill="#fcdea3" font-size="30" font-weight="bold">VWX</text>
+
+  <!-- converging lines to champion -->
+  <line x1="240" y1="578" x2="500" y2="672" stroke="#4a5570" stroke-width="1.6"/>
+  <line x1="600" y1="578" x2="600" y2="672" stroke="#4a5570" stroke-width="1.6"/>
+  <line x1="960" y1="578" x2="700" y2="672" stroke="#4a5570" stroke-width="1.6"/>
+
+  <!-- final round label -->
+  <text x="600" y="636" text-anchor="middle" fill="#2dd4bf" font-size="17" font-weight="bold" letter-spacing="2">FINAL ROUND — GROUP WINNERS COMPETE</text>
+
+  <!-- champion box -->
+  <rect x="420" y="678" width="360" height="118" rx="12" fill="#2c2308" stroke="#f2a623" stroke-width="2.5"/>
+  <text x="600" y="722" text-anchor="middle" fill="#fcdea3" font-size="44" font-weight="bold">JKL</text>
+  <rect x="500" y="738" width="200" height="34" rx="17" fill="#f2a623"/>
+  <text x="600" y="761" text-anchor="middle" fill="#2c2308" font-size="16" font-weight="bold">Confidence 62%*</text>
+
+  <text x="600" y="825" text-anchor="middle" fill="#f5f7fa" font-size="19" font-weight="bold">The pick: JKL</text>
+  <text x="600" y="856" text-anchor="middle" fill="#9aa3b5" font-size="17">
+    <tspan x="600" dy="0">Fresh bullish MACD cross backed by top-tier fundamentals</tspan>
+    <tspan x="600" dy="24">— Quality 100, DCF margin of safety +37.6%.</tspan>
+  </text>
+
+  <text x="600" y="912" text-anchor="middle" fill="#7d8598" font-size="14" font-style="italic">
+    <tspan x="600" dy="0">* Always a 3-way comparison: 33% = no better than a random guess among the 3, 100% = certain.</tspan>
+    <tspan x="600" dy="20">55-65% is a clear, decisive edge — not a weak score.</tspan>
+  </text>
+
+  <line x1="90" y1="968" x2="1110" y2="968" stroke="#24304a" stroke-width="1"/>
+
+  <!-- footer -->
+  <text x="600" y="1004" text-anchor="middle" fill="#7d8598" font-size="15">Fictional tickers (ABC-YZA) for illustration only.</text>
+  <text x="600" y="1028" text-anchor="middle" fill="#7d8598" font-size="15">The daily top 9 stocks are chosen by deterministic scoring — not by AI.</text>
+  <text x="600" y="1060" text-anchor="middle" fill="#5f6779" font-size="13">Not financial advice. Educational and informational purposes only.</text>
+
+  <text x="600" y="1104" text-anchor="middle" fill="#f5f7fa" font-size="20" font-weight="bold" letter-spacing="1">BLUE CHIP SWING TRADER™</text>
+  <text x="600" y="1130" text-anchor="middle" fill="#2dd4bf" font-size="16">bluechipswingtrader.com</text>
+</svg>

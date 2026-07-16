@@ -1,0 +1,111 @@
+<svg width="1200" height="1290" viewBox="0 0 1200 1290" xmlns="http://www.w3.org/2000/svg" font-family="Liberation Sans, Arial, sans-serif">
+  <defs>
+    <marker id="arrow2" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M1 1L8 5L1 9" fill="none" stroke="#4a5570" stroke-width="1.6"/>
+    </marker>
+  </defs>
+
+  <!-- background -->
+  <rect x="0" y="0" width="1200" height="1290" fill="#0b1220"/>
+
+  <!-- header -->
+  <text x="600" y="58" text-anchor="middle" fill="#2dd4bf" font-size="18" font-weight="bold" letter-spacing="3">BLUE CHIP SWING TRADER</text>
+  <text x="600" y="112" text-anchor="middle" fill="#f5f7fa" font-size="50" font-weight="bold">The Quality Score</text>
+  <text x="600" y="148" text-anchor="middle" fill="#9aa3b5" font-size="22">Six checks drawn from long-standing value-investing principles</text>
+
+  <line x1="90" y1="180" x2="1110" y2="180" stroke="#24304a" stroke-width="1"/>
+
+  <text x="600" y="216" text-anchor="middle" fill="#2dd4bf" font-size="17" font-weight="bold" letter-spacing="2">SIX QUALITY CHECKS</text>
+
+  <!-- Row 1 -->
+  <rect x="80" y="246" width="320" height="90" rx="8" fill="#141b2e" stroke="#2d5a8f" stroke-width="1"/>
+  <text x="104" y="284" fill="#f5f7fa" font-size="18" font-weight="bold">Return on equity</text>
+  <text x="104" y="310" fill="#9aa3b5" font-size="14">Profitability vs. equity</text>
+
+  <rect x="440" y="246" width="320" height="90" rx="8" fill="#141b2e" stroke="#2d5a8f" stroke-width="1"/>
+  <text x="464" y="284" fill="#f5f7fa" font-size="18" font-weight="bold">Return on invested capital</text>
+  <text x="464" y="310" fill="#9aa3b5" font-size="14">Efficient use of capital</text>
+
+  <rect x="800" y="246" width="320" height="90" rx="8" fill="#141b2e" stroke="#2d5a8f" stroke-width="1"/>
+  <text x="824" y="284" fill="#f5f7fa" font-size="18" font-weight="bold">Low debt-to-equity</text>
+  <text x="824" y="310" fill="#9aa3b5" font-size="14">Manageable leverage</text>
+
+  <!-- Row 2 -->
+  <rect x="80" y="360" width="320" height="90" rx="8" fill="#141b2e" stroke="#2d5a8f" stroke-width="1"/>
+  <text x="104" y="398" fill="#f5f7fa" font-size="18" font-weight="bold">5-year earnings growth</text>
+  <text x="104" y="424" fill="#9aa3b5" font-size="14">Consistent growth</text>
+
+  <rect x="440" y="360" width="320" height="90" rx="8" fill="#141b2e" stroke="#2d5a8f" stroke-width="1"/>
+  <text x="464" y="398" fill="#f5f7fa" font-size="18" font-weight="bold">Reasonable valuation</text>
+  <text x="464" y="424" fill="#9aa3b5" font-size="14">Low P/E or price-to-book</text>
+
+  <rect x="800" y="360" width="320" height="90" rx="8" fill="#141b2e" stroke="#2d5a8f" stroke-width="1"/>
+  <text x="824" y="398" fill="#f5f7fa" font-size="18" font-weight="bold">DCF margin of safety</text>
+  <text x="824" y="424" fill="#9aa3b5" font-size="14">Price vs. intrinsic value</text>
+
+  <!-- scoring notes -->
+  <text x="600" y="486" text-anchor="middle" fill="#f5f7fa" font-size="19" font-weight="bold">Score = % of available points earned</text>
+  <text x="600" y="514" text-anchor="middle" fill="#9aa3b5" font-size="16" font-style="italic">Missing data isn't penalized — only bad data is.</text>
+
+  <!-- gate box -->
+  <rect x="330" y="546" width="540" height="58" rx="10" fill="#0f2a2a" stroke="#2dd4bf" stroke-width="1.5"/>
+  <text x="600" y="581" text-anchor="middle" fill="#a7f3e8" font-size="18" font-weight="bold">Minimum Quality score of 40 required to qualify</text>
+
+  <line x1="600" y1="604" x2="600" y2="632" stroke="#4a5570" stroke-width="1.6" marker-end="url(#arrow2)"/>
+
+  <text x="600" y="662" text-anchor="middle" fill="#2dd4bf" font-size="17" font-weight="bold" letter-spacing="2">THEN COMBINED INTO HYBRID RANK</text>
+
+  <!-- input boxes -->
+  <rect x="240" y="692" width="200" height="70" rx="8" fill="#141b2e" stroke="#24304a" stroke-width="1"/>
+  <text x="340" y="720" text-anchor="middle" fill="#9aa3b5" font-size="14">Quality</text>
+  <text x="340" y="748" text-anchor="middle" fill="#f5f7fa" font-size="26" font-weight="bold">20%</text>
+
+  <text x="470" y="736" text-anchor="middle" fill="#2dd4bf" font-size="26" font-weight="bold">+</text>
+
+  <rect x="500" y="692" width="200" height="70" rx="8" fill="#141b2e" stroke="#24304a" stroke-width="1"/>
+  <text x="600" y="720" text-anchor="middle" fill="#9aa3b5" font-size="14">Tech</text>
+  <text x="600" y="748" text-anchor="middle" fill="#f5f7fa" font-size="26" font-weight="bold">50%</text>
+
+  <text x="730" y="736" text-anchor="middle" fill="#2dd4bf" font-size="26" font-weight="bold">+</text>
+
+  <rect x="760" y="692" width="200" height="70" rx="8" fill="#141b2e" stroke="#24304a" stroke-width="1"/>
+  <text x="860" y="720" text-anchor="middle" fill="#9aa3b5" font-size="14">RSI*</text>
+  <text x="860" y="748" text-anchor="middle" fill="#f5f7fa" font-size="26" font-weight="bold">30%</text>
+
+  <line x1="600" y1="762" x2="600" y2="790" stroke="#4a5570" stroke-width="1.6" marker-end="url(#arrow2)"/>
+
+  <!-- hybrid rank box -->
+  <rect x="450" y="790" width="300" height="66" rx="10" fill="#141b2e" stroke="#2d5a8f" stroke-width="1.5"/>
+  <text x="600" y="820" text-anchor="middle" fill="#f5f7fa" font-size="23" font-weight="bold">Hybrid rank</text>
+  <text x="600" y="843" text-anchor="middle" fill="#9aa3b5" font-size="14">Sorts the daily list</text>
+
+  <line x1="600" y1="856" x2="600" y2="884" stroke="#4a5570" stroke-width="1.6" marker-end="url(#arrow2)"/>
+
+  <!-- output box -->
+  <rect x="400" y="884" width="400" height="72" rx="10" fill="#2c2308" stroke="#f2a623" stroke-width="2"/>
+  <text x="600" y="918" text-anchor="middle" fill="#fcdea3" font-size="26" font-weight="bold">Daily top 9</text>
+  <text x="600" y="944" text-anchor="middle" fill="#e0c48a" font-size="14">Feeds AI Analysis and AI Bracket</text>
+
+  <text x="600" y="988" text-anchor="middle" fill="#7d8598" font-size="14" font-style="italic">* RSI only counts once the Tech score itself is strong.</text>
+
+  <line x1="90" y1="1018" x2="1110" y2="1018" stroke="#24304a" stroke-width="1"/>
+
+  <!-- Buffett disclaimer box -->
+  <rect x="140" y="1040" width="920" height="128" rx="10" fill="#10182b" stroke="#3a4560" stroke-width="1"/>
+  <text x="600" y="1074" text-anchor="middle" fill="#f5f7fa" font-size="16" font-weight="bold">
+    <tspan x="600" dy="0">This approach draws on publicly known value-investing principles</tspan>
+    <tspan x="600" dy="24">long associated with Warren Buffett.</tspan>
+  </text>
+  <text x="600" y="1128" text-anchor="middle" fill="#8891a3" font-size="14">
+    <tspan x="600" dy="0">Blue Chip Swing Trader is not affiliated with, sponsored by, endorsed by, or associated</tspan>
+    <tspan x="600" dy="20">with Warren Buffett, Berkshire Hathaway Inc., or any of their subsidiaries.</tspan>
+  </text>
+
+  <line x1="90" y1="1198" x2="1110" y2="1198" stroke="#24304a" stroke-width="1"/>
+
+  <!-- footer -->
+  <text x="600" y="1232" text-anchor="middle" fill="#5f6779" font-size="13">Not financial advice. Educational and informational purposes only.</text>
+
+  <text x="600" y="1264" text-anchor="middle" fill="#f5f7fa" font-size="20" font-weight="bold" letter-spacing="1">BLUE CHIP SWING TRADER™</text>
+  <text x="600" y="1288" text-anchor="middle" fill="#2dd4bf" font-size="16">bluechipswingtrader.com</text>
+</svg>
