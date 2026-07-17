@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blue Chip Swing Trader v1.4.48</title>
+<title>Blue Chip Swing Trader v1.4.49</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.0/dist/chartjs-chart-financial.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/luxon@3.4/build/global/luxon.min.js"></script>
@@ -104,8 +104,7 @@
   <button id="aiAnalysisBtn" class="secondary">AI Analysis</button>
   <button id="byokSettingsBtn" class="secondary">API Key Settings</button>
   <button id="bracketBtn" class="secondary" disabled title="Add your Anthropic API key first (API Key Settings) to use AI Bracket.">Run AI Bracket</button>
-  <input id="analyzeStockInput" type="text" placeholder="Ticker" maxlength="6" style="width:70px; text-transform:uppercase; margin-left:12px;">
-  <button id="analyzeStockBtn" class="secondary" disabled title="Add your Anthropic API key first (API Key Settings) to use Analyze 1 Stock." onclick="analyzeOneStock(document.getElementById('analyzeStockInput').value, null)">Analyze 1 Stock</button>
+  <button id="analyzeStockBtn" class="secondary" disabled title="Add your Anthropic API key first (API Key Settings) to use Analyze 1 Stock." onclick="openAnalyzeStockPanel()">Analyze 1 Stock</button>
   <span id="status" class="loading">Ready. Cache: None</span>
 </div>
 
@@ -189,6 +188,11 @@
   </div>
   <div style="font-size:11px; color:#94a3b8; margin-bottom:10px;">
     A single, detailed free-form report on one stock -- no forced Buy/Hold/Sell label, and no comparison against other candidates. Works on any S&P 500 ticker, whether or not it currently qualifies for the daily top 9. Uses your own Anthropic API key (same key as AI Bracket) -- typically a couple of cents per run.
+  </div>
+  <div style="margin-bottom:12px;">
+    <label for="analyzeStockInput" style="font-size:12px; color:#94a3b8; margin-right:8px;">Ticker:</label>
+    <input id="analyzeStockInput" type="text" placeholder="e.g. MSFT" maxlength="6" style="width:110px; text-transform:uppercase; margin-right:8px;" onkeydown="if(event.key==='Enter'){analyzeOneStock(document.getElementById('analyzeStockInput').value, null);}">
+    <button class="secondary" onclick="analyzeOneStock(document.getElementById('analyzeStockInput').value, null)">Analyze</button>
   </div>
   <div id="analyzeStockProgress" style="font-size:12px; color:#94a3b8; margin-bottom:10px; white-space:pre-line;"></div>
   <div id="analyzeStockOutput" style="font-size:13px; line-height:1.6;"></div>
@@ -1086,6 +1090,16 @@ function updateAnalyzeStockButtonState() {
   }
 }
 
+// Opens the panel and focuses its ticker input -- the toolbar button's only job. The actual
+// analysis run is triggered from inside the panel (its own Analyze button / Enter key), or
+// directly via a per-position "Analyze" button, which calls analyzeOneStock with a ticker already.
+function openAnalyzeStockPanel() {
+  document.getElementById('analyzeStockPanel').style.display = 'block';
+  document.getElementById('analyzeStockPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('analyzeStockInput').focus();
+}
+window.openAnalyzeStockPanel = openAnalyzeStockPanel;
+
 function renderAnalyzeStockResult(result) {
   const out = document.getElementById('analyzeStockOutput');
   out.innerHTML = `<div style="font-weight:600; color:#f8fafc; margin-bottom:8px;">${result.ticker}</div><div>${result.analysis}</div>`;
@@ -1101,6 +1115,8 @@ async function analyzeOneStock(ticker, positionContext) {
   const progress = document.getElementById('analyzeStockProgress');
   const out = document.getElementById('analyzeStockOutput');
   panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('analyzeStockInput').value = ticker;
   progress.textContent = '';
   out.innerHTML = '';
   document.getElementById('analyzeStockDisclaimer').style.display = 'none';
@@ -1123,7 +1139,12 @@ async function analyzeOneStock(ticker, positionContext) {
     progress.textContent = `Analyzing ${ticker}...`;
     const requestBody = {
       model: 'claude-sonnet-5',
-      max_tokens: 1024,
+      max_tokens: 2048,
+      // effort:'low' bounds Claude Sonnet 5's extended-thinking token spend -- without this,
+      // thinking can consume the entire max_tokens budget before any visible text is produced,
+      // leaving no text content block at all (the exact failure this feature hit in testing).
+      // Same lever AI Bracket's runMatchup already relies on for the same reason.
+      output_config: { effort: 'low' },
       messages: [{ role: 'user', content: [
         { type: 'text', text: `You are giving a detailed 3-15 day swing-trade assessment of a single stock, ${ticker}. You're given its price chart (with Bollinger Bands and 20-day SMA) and its exact computed technical/fundamental data${positionContext ? ", plus the user's actual open position in it" : ''}. This stock may or may not currently qualify for our top-9 daily screen -- note explicitly if its Quality score is below our normal 40-point qualifying bar or its RSI is elevated, and what that implies. Give a thorough, free-form written analysis of where it sits in its trend cycle and what you'd do from here${positionContext ? ' given the existing position' : ''}. Do not force this into a single BUY/HOLD/SELL label -- write your real assessment. This is not financial advice.` },
         { type: 'text', text: line },
