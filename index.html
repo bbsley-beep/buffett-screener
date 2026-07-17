@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blue Chip Swing Trader v1.4.50</title>
+<title>Blue Chip Swing Trader v1.4.51</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.0/dist/chartjs-chart-financial.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/luxon@3.4/build/global/luxon.min.js"></script>
@@ -310,6 +310,42 @@ Final: comparing group winners... winner JKL</div>
   </div>
 </div>
 
+<div id="analyzeStockExampleModal" class="modal">
+  <div class="modal-content" style="max-width:800px;">
+    <span class="close" onclick="closeAnalyzeStockExampleModal()">&times;</span>
+    <div class="chart-title">Analyze 1 Stock — Example Report</div>
+    <div class="sub" style="margin-bottom:14px;">A real report, exactly as produced by the app — the only change is that the stock's real name has been replaced with a placeholder code (ABCD) so this reads as a demonstration of the AI's analysis, not as a claim about any specific stock's performance.</div>
+    <div style="font-size:13px; line-height:1.6;">
+      <div style="font-weight:600; color:#f8fafc; margin-bottom:12px; font-size:15px;">ABCD Swing Trade Assessment</div>
+
+      <div style="font-weight:600; color:#f8fafc; margin-bottom:4px;">Quality &amp; Screen Qualification</div>
+      <div style="margin-bottom:14px;">Quality score of 75 comfortably clears the 40-point qualifying bar — this is a fundamentally sound name, not a marginal pass. RSI at 56.2 is moderate, not overbought — plenty of room to run before hitting overheated territory (typically 70+). So from a screening standpoint, ABCD would qualify cleanly on quality, and RSI doesn't disqualify it on momentum extremes either.</div>
+
+      <div style="font-weight:600; color:#f8fafc; margin-bottom:4px;">Chart / Trend Structure</div>
+      <div style="margin-bottom:14px;">Looking at the 6-month chart, ABCD has been through a full cycle: peaked near $480 in late January, sold off hard into a March/April low around $360-365 (touching the lower Bollinger Band), then staged a strong recovery through April-May back into the low-$420s. Since late May, price has been consolidating in a choppy $380-$420 range, with a notable spike to ~$460 in early June that quickly faded back into the range.</div>
+      <div style="margin-bottom:14px;">Currently price ($401.10) sits almost exactly on the 20-day SMA, with Bollinger Bands fairly narrow/pinched compared to the wide bands seen in Feb-March — this suggests the stock is in a consolidation/basing phase rather than a clean trending move. Bands are neither at extreme width (post-breakout) nor extreme narrowness (pre-breakout), but the price hugging the SMA mid-band is a classic "coiling" signal.</div>
+
+      <div style="font-weight:600; color:#f8fafc; margin-bottom:4px;">Momentum</div>
+      <div style="margin-bottom:14px;">MACD is flagged Bull ↑, suggesting a fresh positive momentum cross, which is constructive given price is basing right at the SMA — this often precedes a leg higher if it holds. Tech score of 50 is unremarkable/neutral, though — it's not confirming a strong breakout yet, just a balanced setup.</div>
+
+      <div style="font-weight:600; color:#f8fafc; margin-bottom:4px;">Valuation Caveat</div>
+      <div style="margin-bottom:14px;">DCF MOS of -482.8% is extreme and should not be ignored — by this DCF model, ABCD appears wildly overvalued relative to intrinsic value estimate. This is a common feature of DCF models on high-multiple mega-cap growth/quality names and should be weighted lightly versus technical/quality scores, but it's worth flagging as a valuation risk if you're holding for longer than the swing window — this is not a "cheap" stock by any traditional DCF standard.</div>
+
+      <div style="font-weight:600; color:#f8fafc; margin-bottom:4px;">Trade Plan</div>
+      <ul style="margin:4px 0 14px; padding-left:20px;">
+        <li style="margin-bottom:6px;"><strong>Entry context:</strong> Price at $401 sitting on SMA with a bullish MACD cross is a reasonable technical entry point for a swing long, assuming you're comfortable with the stated stop.</li>
+        <li style="margin-bottom:6px;"><strong>Stop:</strong> $389.07 — this sits below the recent range lows and roughly at/near the lower Bollinger Band, a logical technical stop-out level (~3% risk).</li>
+        <li style="margin-bottom:6px;"><strong>Target:</strong> $419.58 — aligns with the upper end of the recent consolidation range and prior swing highs from early June before the spike, a sensible near-term resistance target (~4.6% reward).</li>
+        <li style="margin-bottom:0;"><strong>Risk/Reward:</strong> roughly 1.5:1, acceptable but not exceptional for a 3-15 day swing.</li>
+      </ul>
+
+      <div style="font-weight:600; color:#f8fafc; margin-bottom:4px;">Bottom Line</div>
+      <div style="margin-bottom:0;">ABCD qualifies on quality, RSI is neutral (not overbought), and MACD just turned bullish while price consolidates on the 20-SMA — a constructive but not screaming setup. This looks more like an early-stage basing/accumulation opportunity than a momentum breakout chase. I'd consider a starter long here with the stated stop, watching for a decisive close above ~$410-415 (prior resistance shelf) to confirm the breakout thesis; without that confirmation, expect continued chop between $385-420. The DCF flag is a longer-term valuation caution, not a swing-trade blocker, but it means this isn't a name to hold indefinitely on valuation grounds alone.</div>
+    </div>
+    <div style="font-size:11px; font-style:italic; color:#64748b; margin-top:16px;">Analyze 1 Stock is generated by Anthropic's Claude using your own API key and is not financial advice. Verify independently before trading.</div>
+  </div>
+</div>
+
 <div id="analysisExampleModal" class="modal">
   <div class="modal-content" style="max-width:800px;">
     <span class="close" onclick="closeAnalysisExampleModal()">&times;</span>
@@ -494,6 +530,15 @@ function renderGateScreen() {
           <div class="sub" style="margin-top:10px; font-size:11px;">A full 4-comparison bracket run typically costs well under $0.10 on your own Anthropic account.</div>
         </div>
 
+        <div style="border:1px solid #1e2740; border-radius:8px; padding:18px 20px; margin-top:24px;">
+          <div class="chart-title" style="font-size:20px;">See Analyze 1 Stock in action</div>
+          <div class="sub" style="margin-bottom:14px;">A real report, exactly as produced by the app — the only change is that the stock's real name has been replaced with a placeholder code (ABCD) so this reads as a demonstration of the AI's analysis, not as a claim about any specific stock's performance. Works on any of the 500 stocks in the index, whether or not it currently qualifies for the daily top 9 — no comparison against other candidates, no forced Buy/Hold/Sell label.</div>
+          <div style="font-weight:600; color:#f8fafc; margin-bottom:8px;">ABCD Swing Trade Assessment</div>
+          <div class="sub" style="margin-bottom:14px;">ABCD qualifies on quality, RSI is neutral (not overbought), and MACD just turned bullish while price consolidates on the 20-day SMA — a constructive but not screaming setup. This looks more like an early-stage basing/accumulation opportunity than a momentum breakout chase...</div>
+          <button onclick="openAnalyzeStockExampleModal()" class="secondary">View Full Example</button>
+          <div class="sub" style="margin-top:8px; font-size:11px;">Uses the same Anthropic API key as AI Bracket — typically a couple of cents per run.</div>
+        </div>
+
         <div style="border:1px solid #1e2740; border-radius:8px; padding:14px 16px; margin-top:24px;">
           <div style="font-weight:600; color:#f8fafc; margin-bottom:4px;">Why isn't there a published backtest?</div>
           <div class="sub" style="margin-bottom:0;">Because there's no single, fixed version of the tool to backtest. Every user sets their own DCF Growth Rate and Discount Rate, and those choices change which stocks qualify and how they rank on any given day — your results depend on the inputs you choose, not just the calendar date.</div>
@@ -522,7 +567,7 @@ function renderGateScreen() {
             </div>
             <div style="flex:1; min-width:220px; border:1px solid #c9a227; border-radius:8px; padding:16px;">
               <div style="font-weight:600; color:#f8fafc; margin-bottom:4px;">Premium -- $129/mo</div>
-              <div class="sub" style="margin-bottom:12px;">Everything in Basic + AI Bracket (BYOK)</div>
+              <div class="sub" style="margin-bottom:12px;">Everything in Basic + AI Bracket and Analyze 1 Stock (both BYOK)</div>
               <button onclick="openSignInModal()">Sign In to Start Free Trial</button>
             </div>
           </div>
@@ -570,6 +615,11 @@ function openAnalysisExampleModal() { document.getElementById('analysisExampleMo
 window.openAnalysisExampleModal = openAnalysisExampleModal;
 function closeAnalysisExampleModal() { document.getElementById('analysisExampleModal').style.display = 'none'; }
 window.closeAnalysisExampleModal = closeAnalysisExampleModal;
+
+function openAnalyzeStockExampleModal() { document.getElementById('analyzeStockExampleModal').style.display = 'block'; }
+window.openAnalyzeStockExampleModal = openAnalyzeStockExampleModal;
+function closeAnalyzeStockExampleModal() { document.getElementById('analyzeStockExampleModal').style.display = 'none'; }
+window.closeAnalyzeStockExampleModal = closeAnalyzeStockExampleModal;
 
 function openConfidenceExplainerModal() { document.getElementById('confidenceExplainerModal').style.display = 'block'; }
 window.openConfidenceExplainerModal = openConfidenceExplainerModal;
@@ -1549,7 +1599,7 @@ refreshPositionsBtn.addEventListener('click',refreshPositionPrices);
 exportPositionsBtn.addEventListener('click',exportPositionsXLSX);
 byokSettingsBtn.addEventListener('click', openByokKeyModal);
 bracketBtn.addEventListener('click', runAiBracket);
-window.onclick = (e) => { if (e.target == document.getElementById('chartModal')) closeChart(); if (e.target == document.getElementById('positionModal')) closePositionModal(); if (e.target == document.getElementById('byokKeyModal')) closeByokKeyModal(); if (e.target == document.getElementById('signInModal')) closeSignInModal(); if (e.target == document.getElementById('bracketExampleModal')) closeBracketExampleModal(); if (e.target == document.getElementById('analysisExampleModal')) closeAnalysisExampleModal(); if (e.target == document.getElementById('confidenceExplainerModal')) closeConfidenceExplainerModal(); }
+window.onclick = (e) => { if (e.target == document.getElementById('chartModal')) closeChart(); if (e.target == document.getElementById('positionModal')) closePositionModal(); if (e.target == document.getElementById('byokKeyModal')) closeByokKeyModal(); if (e.target == document.getElementById('signInModal')) closeSignInModal(); if (e.target == document.getElementById('bracketExampleModal')) closeBracketExampleModal(); if (e.target == document.getElementById('analysisExampleModal')) closeAnalysisExampleModal(); if (e.target == document.getElementById('analyzeStockExampleModal')) closeAnalyzeStockExampleModal(); if (e.target == document.getElementById('confidenceExplainerModal')) closeConfidenceExplainerModal(); }
 </script>
 </body>
 </html>
