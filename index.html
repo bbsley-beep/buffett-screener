@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blue Chip Swing Trader v1.4.52</title>
+<title>Blue Chip Swing Trader v1.4.53</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.0/dist/chartjs-chart-financial.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/luxon@3.4/build/global/luxon.min.js"></script>
@@ -1047,9 +1047,10 @@ async function runMatchup(candidates, imageByTicker, priorWinners) {
   const tickers = shuffled.map(c => c.ticker);
   const isFinal = !!priorWinners;
   const content = [
-    { type: 'text', text: isFinal
+    { type: 'text', text: (isFinal
       ? `You are selecting the single best stock for a 3-15 day swing-trade entry from the ${tickers.length} winners of round 1 -- each already beat two other stocks to get here. For each, you're given its price chart, its exact computed technical/fundamental data, and its round-1 reasoning. Weigh where each stock sits in its trend cycle, not just whether an indicator crosses a threshold. This is the final round -- give a thorough justification for your pick after both elimination rounds. This is not financial advice. Call select_winner with the single best candidate.`
-      : `You are comparing ${tickers.length} stocks for a 3-15 day swing-trade entry. For each, you're given its price chart (with Bollinger Bands and 20-day SMA) plus its exact computed technical/fundamental data. Weigh where each stock sits in its trend cycle (fresh reversal vs. already-extended vs. no clear trend), not just whether an indicator crosses a threshold. This is not financial advice. Call select_winner with the single best candidate.` }
+      : `You are comparing ${tickers.length} stocks for a 3-15 day swing-trade entry. For each, you're given its price chart (with Bollinger Bands and 20-day SMA) plus its exact computed technical/fundamental data. Weigh where each stock sits in its trend cycle (fresh reversal vs. already-extended vs. no clear trend), not just whether an indicator crosses a threshold. This is not financial advice. Call select_winner with the single best candidate.`)
+      + ` All prices and chart data are live and current, fetched moments ago -- treat them as ground truth even if they seem inconsistent with what you recall about a stock from training (your training data has a cutoff and cannot reflect recent splits, rallies, or crashes). Do not flag any price or data as a mismatch, hypothetical, or a test dataset -- analyze the real numbers you were given.` }
   ];
   shuffled.forEach(x => {
     let line = bracketCandidateLine(x);
