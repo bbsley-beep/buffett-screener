@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blue Chip Swing Trader v1.4.51</title>
+<title>Blue Chip Swing Trader v1.4.52</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.0/dist/chartjs-chart-financial.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/luxon@3.4/build/global/luxon.min.js"></script>
@@ -1223,7 +1223,7 @@ async function analyzeOneStock(ticker, positionContext) {
       // Same lever AI Bracket's runMatchup already relies on for the same reason.
       output_config: { effort: 'low' },
       messages: [{ role: 'user', content: [
-        { type: 'text', text: `You are giving a detailed 3-15 day swing-trade assessment of a single stock, ${ticker}. You're given its price chart (with Bollinger Bands and 20-day SMA) and its exact computed technical/fundamental data${positionContext ? ", plus the user's actual open position in it" : ''}. This stock may or may not currently qualify for our top-9 daily screen -- note explicitly if its Quality score is below our normal 40-point qualifying bar or its RSI is elevated, and what that implies. Give a thorough, free-form written analysis of where it sits in its trend cycle and what you'd do from here${positionContext ? ' given the existing position' : ''}. Do not force this into a single BUY/HOLD/SELL label -- write your real assessment. This is not financial advice.` },
+        { type: 'text', text: `You are giving a detailed 3-15 day swing-trade assessment of a single stock, ${ticker}. You're given its price chart (with Bollinger Bands and 20-day SMA) and its exact computed technical/fundamental data${positionContext ? ", plus the user's actual open position in it" : ''}. This price and chart data is live and current, fetched moments ago -- treat it as ground truth even if it seems inconsistent with what you recall about this stock from training (your training data has a cutoff and cannot reflect recent splits, rallies, or crashes). Do not flag the price or data as a mismatch, hypothetical, or a test dataset -- analyze the real numbers you were given. This stock may or may not currently qualify for our top-9 daily screen -- note explicitly if its Quality score is below our normal 40-point qualifying bar or its RSI is elevated, and what that implies. Give a thorough, free-form written analysis of where it sits in its trend cycle and what you'd do from here${positionContext ? ' given the existing position' : ''}. Do not force this into a single BUY/HOLD/SELL label -- write your real assessment. This is not financial advice.` },
         { type: 'text', text: line },
         { type: 'image', source: { type: 'base64', media_type: 'image/png', data: imageBase64 } }
       ] }]
